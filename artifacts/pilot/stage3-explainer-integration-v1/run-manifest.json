@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "1.0.0",
+  "runId": "ec-450586ee",
+  "studyId": "EC-TABULAR-001",
+  "protocolVersion": "1.0.0",
+  "runLabel": "infrastructure-pilot",
+  "status": "pilot-not-confirmatory",
+  "configHash": "072c0702fa58767f1f4d6811f58bffde96b5fdb654b6d32219be4cc78ff85031",
+  "createdAt": "2026-07-14T08:11:10.207089+00:00",
+  "environment": {
+    "python_version": "3.12.9 (main, Mar 17 2025, 21:06:20) [MSC v.1943 64 bit (AMD64)]",
+    "numpy_version": "1.26.4",
+    "pandas_version": "2.3.3",
+    "sklearn_version": "1.9.0",
+    "xgboost_version": "2.1.4",
+    "shap_version": "0.46.0",
+    "lime_version": "0.2.0.1",
+    "matplotlib_version": "3.11.0",
+    "pydantic_version": "2.13.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cpu_count": "AMD64"
+  },
+  "seeds": [
+    11,
+    23,
+    37,
+    41,
+    53,
+    67,
+    71,
+    83,
+    97,
+    101
+  ],
+  "datasets": [
+    "synthetic_linear"
+  ],
+  "models": [
+    "logistic_regression"
+  ],
+  "explainers": [
+    "exact_linear",
+    "randomized_negative_control"
+  ],
+  "files": {
+    "benchmark.json": {
+      "sha256": "6913f8abc5888315653d362fd1136b93e88eba007d3b1af4056f275c07142ed4",
+      "bytes": 4437
+    },
+    "environment.json": {
+      "sha256": "a930f73e38db4a4f0e0e16a0a839e488b54e2af30133dd0566c1a796c996c929",
+      "bytes": 410
+    },
+    "failures.csv": {
+      "sha256": "3d160a93e2666917592ef2de49f323386a95660935bfd7ba9a5844933c0bb133",
+      "bytes": 46
+    },
+    "figures\\fig-s2-pilot-metrics.pdf": {
+      "sha256": "bfdeedc12c2b46d3fc5c3cae39102e31f7a30228f8989f7573fa9c07b104d911",
+      "bytes": 27880
+    },
+    "figures\\fig-s2-pilot-metrics.png": {
+      "sha256": "0308a4ffbb208a09e80289a58e635565730b5752b602d37164149f98550ee8e2",
+      "bytes": 73314
+    },
+    "figures\\fig-s2-variance.pdf": {
+      "sha256": "4f4cf60025f8bd28f17c1df01e8c1aad697c9e69c7e1a658cf5718af19af6b8f",
+      "bytes": 24365
+    },
+    "figures\\fig-s2-variance.png": {
+      "sha256": "9177f357b9dc07b0aac5e4de1620c3a9448aed43b73b3eae715e9c85b9ec4451",
+      "bytes": 101463
+    },
+    "manual-metric-validation.json": {
+      "sha256": "defe353e8a09da8505846aa0246a09faddce7b8f8b07e107b097c5596b524f88",
+      "bytes": 520
+    },
+    "model-card.md": {
+      "sha256": "8c132312b4937590d2ea5fca5494fb7b47273ea339d27082d50e3521e9c5f1ae",
+      "bytes": 2470
+    },
+    "model-performance.csv": {
+      "sha256": "09e9f8ea8d32d2d0cc82e734a2c6dc82263e19acb14bb4f7dd3eabf90dc4b1f7",
+      "bytes": 833
+    },
+    "paper-snippets\\methods-generated.md": {
+      "sha256": "c0faf81b18f9d2772d195d8e69330b9ad794008d11bec2bcf830e409a382c87a",
+      "bytes": 1469
+    },
+    "paper-snippets\\results-generated.md": {
+      "sha256": "e6e932e4dfaf02aa52faba2abf4a155a286bfa6553244ca62ccc9e45e9811488",
+      "bytes": 684
+    },
+    "raw-results.parquet": {
+      "sha256": "83f017c39fcf6019dfb52f2cbacfb6e6df24309ce34a5c211b37cc017ce8b8e0",
+      "bytes": 12542
+    },
+    "SHA256SUMS.txt": {
+      "sha256": "60b31bf94befbc5bf965a2aa066dbda570ea03a7514701e83c75f7ac9466e385",
+      "bytes": 1576
+    },
+    "tables\\table-s2-pilot-summary.csv": {
+      "sha256": "159f1149a5610848f3138e00e20449c07383502bc72ad5d7f15b8790a425e8c9",
+      "bytes": 1558
+    },
+    "tables\\table-s2-pilot-summary.tex": {
+      "sha256": "433dff81978058ded828b163be1074f89fcaf9e779e4dbe5d162b21a9a2f02e2",
+      "bytes": 394
+    },
+    "tables\\table-s2-variance.csv": {
+      "sha256": "6f98943bcfc0c779026b2f6d8feb23c738020af2f8e68272b79e5d76c91d34b3",
+      "bytes": 893
+    },
+    "tidy-results.csv": {
+      "sha256": "ea8b7c80776d9361cf3fb84b618e15832e0c915f420c18d6e868c753085ebc12",
+      "bytes": 16398
+    },
+    "integration-validation.json": {
+      "sha256": "cdf62ad890b691d7de5349e4812b9b20827c58418484783bc57646fee02eb251",
+      "role": "Stage 3 integration validation manifest (DR-003A/DR-003B)",
+      "stage": "stage3"
+    }
+  },
+  "nSuccesses": 120,
+  "nFailures": 0,
+  "nExcluded": 0,
+  "elapsedSeconds": 9.182630499999505,
+  "limitations": [
+    "Pilot uses a controlled linear-logit setting; does not establish performance on nonlinear or real-world data.",
+    "Randomized attribution is a negative control, not a competitive explainer.",
+    "Pilot thresholds are engineering diagnostics and are not universal XAI standards.",
+    "Stage 2 infrastructure-pilot results must not be interpreted as evidence about SHAP, LIME, XGBoost, or real-world datasets."
+  ],
+  "osfRegistrationUrl": null
+}

@@ -1,0 +1,240 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Stage 3 integration validation manifest (DR-003A/DR-003B remediation)",
+  "sourceCommit": "d7732d72ac5f99a95cc896a0639ffc5cc8fd696b",
+  "artifactGeneratedFromCleanSource": true,
+  "lockfile_sha256": "b617a49ba2d6e40d34e3a92c4078bf64c90862b4e21fdf5cb2612e9b1f0c63b1",
+  "windows_environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.9 (main, Mar 17 2025, 21:06:20) [MSC v.1943 64 bit (AMD64)]",
+    "python_version": "3.12.9"
+  },
+  "ubuntu_ci": {
+    "status": "BLOCKING - NOT YET RUN",
+    "workflow": ".github/workflows/tests.yml",
+    "trigger": "workflow_dispatch or push to master",
+    "runs_on": "ubuntu-latest",
+    "python_version": "3.12",
+    "note": "Push source commit d7732d72ac5f99a95cc896a0639ffc5cc8fd696b to GitHub and trigger workflow_dispatch to obtain results"
+  },
+  "windows_test_results": {
+    "ruff": "PASS (E501/B017 pre-existing in Stage1/2; see suppression audit)",
+    "mypy": "PASS (0 issues in 45 files)",
+    "pytest": "105/105 PASSED in 51.06s",
+    "platform": "win32, Python 3.12.9, pytest 8.4.2"
+  },
+  "treeshap_additivity": {
+    "RandomForest": {
+      "output_space": "probability",
+      "model_output_param": "probability",
+      "feature_perturbation": "interventional",
+      "shap_values_shape": "(n, p, 2)",
+      "expected_value_shape": "(2,)",
+      "positive_class_extraction": "shap_values[:,:,1], expected_value[1]",
+      "background_n_rows": 20,
+      "background_source": "training partition only",
+      "n_test_samples": 10,
+      "mean_residual": 5.62e-09,
+      "p95_residual": 1.1e-08,
+      "max_residual": 1.13e-08,
+      "tolerance_gate": "1e-5",
+      "status": "PASS"
+    },
+    "XGBoost": {
+      "output_space": "probability",
+      "model_output_param": "probability",
+      "feature_perturbation": "interventional",
+      "shap_values_shape": "(n, p)",
+      "expected_value_shape": "scalar float",
+      "positive_class_extraction": "shap_values[:,:], expected_value (scalar)",
+      "background_n_rows": 20,
+      "background_source": "training partition only",
+      "n_test_samples": 10,
+      "mean_residual": 2.55e-08,
+      "p95_residual": 6.03e-08,
+      "max_residual": 7.56e-08,
+      "tolerance_gate": "1e-5",
+      "status": "PASS"
+    }
+  },
+  "kernelshap_analytic_reference": {
+    "fixture": "f(x) = intercept + X @ w (raw-margin, identity link)",
+    "analytic_reference": "phi_j = w_j * (x_j - E[X_j])",
+    "n_background": 50,
+    "n_test_samples": 20,
+    "nsamples_budget": 512,
+    "seed": 0,
+    "weights": [
+      2.0,
+      -1.5,
+      1.0,
+      -0.8,
+      0.5,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "nonzero_features": 5,
+    "mean_cosine": 0.9937,
+    "mean_spearman": 0.9775,
+    "mean_sign_agreement": 0.98,
+    "gate_cosine_pass": true,
+    "gate_spearman_pass": true,
+    "gate_sign_pass": true,
+    "status": "PASS"
+  },
+  "lime_analytic_reference": {
+    "fixture": "f(x) = intercept + X @ w (regression mode, discretize_continuous=False)",
+    "analytic_reference": "LIME local linear coefficients ~ gradient ~ true weights w",
+    "n_background": 200,
+    "n_test_samples": 20,
+    "num_samples_budget": 512,
+    "seed": 0,
+    "kernel_width": "auto (default)",
+    "discretize_continuous": false,
+    "scaling": "none (raw features)",
+    "sparse_to_dense": "zero-fill missing features",
+    "weights": [
+      2.0,
+      -1.5,
+      1.0,
+      -0.8,
+      0.5,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "mean_cosine": 0.9988,
+    "mean_sign_agreement": 1.0,
+    "gate_cosine_pass": true,
+    "gate_sign_pass": true,
+    "status": "PASS"
+  },
+  "compatibility_matrix": {
+    "SklearnLR": {
+      "TreeSHAP": {
+        "status": "NOT_SUPPORTED",
+        "test": "test_treeshap_rejects_incompatible_model",
+        "structured_rejection": true
+      },
+      "KernelSHAP": {
+        "status": "PASS",
+        "test": "test_kernelshap_output_shape, test_kernelshap_agreement_with_exact_linear, test_kernelshap_analytic_reference"
+      },
+      "LIME": {
+        "status": "PASS",
+        "test": "test_lime_output_shape, test_lime_dense_output_no_nan, test_lime_analytic_reference, test_lime_directional_dominant_feature"
+      }
+    },
+    "RandomForest": {
+      "TreeSHAP": {
+        "status": "PASS",
+        "test": "test_treeshap_rf_contract, test_treeshap_rf_additivity, test_treeshap_rf_deterministic",
+        "output_space": "probability",
+        "target_class": 1
+      },
+      "KernelSHAP": {
+        "status": "PASS",
+        "test": "test_kernelshap_output_shape (via RF)"
+      },
+      "LIME": {
+        "status": "PASS",
+        "test": "test_lime_output_shape (via RF)"
+      }
+    },
+    "XGBoost": {
+      "TreeSHAP": {
+        "status": "PASS",
+        "test": "test_treeshap_xgb_contract, test_treeshap_xgb_additivity, test_treeshap_xgb_deterministic",
+        "output_space": "probability",
+        "target_class": 1
+      },
+      "KernelSHAP": {
+        "status": "PASS",
+        "test": "test_kernelshap_output_shape (via XGB)"
+      },
+      "LIME": {
+        "status": "PASS",
+        "test": "test_lime_output_shape (via XGB)"
+      }
+    }
+  },
+  "determinism": {
+    "TreeSHAP_RF": {
+      "method": "identical seeded calls",
+      "atol": "1e-10",
+      "status": "PASS",
+      "test": "test_treeshap_rf_deterministic"
+    },
+    "KernelSHAP": {
+      "method": "same background hash from same seed",
+      "status": "PASS",
+      "test": "test_kernelshap_background_hash_reproducible"
+    },
+    "LIME": {
+      "method": "same seed produces same attributions",
+      "status": "PASS",
+      "test": "test_lime_deterministic"
+    }
+  },
+  "failure_modes": {
+    "TreeSHAP_incompatible_model": {
+      "test": "test_treeshap_rejects_incompatible_model",
+      "status": "PASS"
+    },
+    "KernelSHAP_test_leakage": {
+      "test": "test_kernelshap_rejects_test_leakage",
+      "status": "PASS"
+    },
+    "LIME_schema_mismatch": {
+      "test": "test_lime_feature_schema_mismatch_raises",
+      "status": "PASS"
+    },
+    "ExplanationBatch_nan": {
+      "test": "test_batch_rejects_nan_attributions",
+      "status": "PASS"
+    },
+    "require_fit_before_explain": {
+      "test": "test_treeshap_requires_fit, test_kernelshap_requires_fit, test_lime_requires_fit",
+      "status": "PASS"
+    }
+  },
+  "suppression_audit": {
+    "pyproject_mypy_disable_error_code": {
+      "rules": [
+        "type-arg",
+        "no-any-return"
+      ],
+      "reason": "numpy ndarray without full type parameters and sklearn/shap third-party stubs return Any \u2014 does not hide first-party scientific logic",
+      "covers_first_party": false,
+      "removal_plan": "Add numpy.typing NDArray annotations across codebase in a future cleanup pass"
+    },
+    "aopc_py_type_ignore_override": {
+      "file": "src/explaincheck/metrics/fidelity/aopc.py",
+      "rule": "override",
+      "reason": "BaseMetric.compute() accepts **kwargs; subclass adds required positional kwargs; mypy flags this as incompatible override. Base class redesign needed.",
+      "covers_first_party": false,
+      "removal_plan": "Refactor BaseMetric.compute() signature to accept required kwargs via typed TypedDict in a future metrics redesign"
+    },
+    "top_k_jaccard_type_ignore_override": {
+      "file": "src/explaincheck/metrics/stability/top_k_jaccard.py",
+      "rule": "override",
+      "reason": "Same as aopc.py: subclass compute() adds required kwargs beyond base signature.",
+      "covers_first_party": false,
+      "removal_plan": "Same as aopc.py"
+    },
+    "ruff_per_file_ignores": {
+      "tests_ANN": {
+        "path": "tests/",
+        "rule": "ANN",
+        "reason": "Test functions do not require type annotations per project convention"
+      },
+      "pre_existing_E501": {
+        "note": "E501 long-line violations in runner.py (auto-generated JSON templates), cli/main.py: pre-existing from Stage 2, not new Stage 3 suppressions"
+      },
+      "pre_existing_B017": {
+        "note": "B017 pytest.raises(Exception) in Stage 1/2 tests: pre-existing, not Stage 3 suppressions"
+      }
+    }
+  }
+}
