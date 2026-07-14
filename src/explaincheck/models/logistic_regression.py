@@ -19,7 +19,6 @@ import numpy as np
 
 from explaincheck.contracts import ModelFamily, ModelRecord
 from explaincheck.models.base import BaseModel
-from explaincheck.provenance import utc_now_iso
 
 
 def _sigmoid(z: np.ndarray) -> np.ndarray:

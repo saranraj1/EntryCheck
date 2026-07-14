@@ -13,23 +13,19 @@ Rules:
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from explaincheck.contracts.enums import (
     DataSplit,
     ExplainerName,
     ExplainerType,
     MetricFamily,
-    MissingnessHandler,
-    MissingnessMechanism,
     ModelFamily,
     PredictionPreservationStatus,
     RunLabel,
     RunStatus,
-    StabilityVariant,
     TaskType,
 )
 
@@ -95,6 +91,7 @@ class ModelRecord(BaseModel):
     fit_ms: float
     model_hash: str          # hash of serialised model parameters
     train_sha256: str
+    notes: str | None = None  # structured metadata (e.g. convergence status)
 
 
 # ---------------------------------------------------------------------------

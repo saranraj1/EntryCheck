@@ -24,7 +24,6 @@ from explaincheck.contracts import (
     ExplainerType,
     FailureRecord,
     ModelFamily,
-    RunStatus,
 )
 from explaincheck.explainers.base import BaseExplainer
 from explaincheck.models.logistic_regression import LogisticRegressionAdapter

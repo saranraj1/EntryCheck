@@ -12,12 +12,11 @@ import json
 import platform
 import sys
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import numpy as np
-
 
 # ---------------------------------------------------------------------------
 # Hashing
@@ -85,7 +84,7 @@ def new_run_id() -> str:
 
 def utc_now_iso() -> str:
     """Current UTC time as ISO-8601 string."""
-    return datetime.now(tz=timezone.utc).isoformat()
+    return datetime.now(tz=UTC).isoformat()
 
 
 # ---------------------------------------------------------------------------

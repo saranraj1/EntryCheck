@@ -50,7 +50,7 @@ def test_cli_env_snapshot_to_file(tmp_path: Path) -> None:
 def test_cli_pilot_synthetic_dry_run(tmp_path: Path) -> None:
     """Dry run must succeed without running any computation."""
     runner = CliRunner()
-    import os, shutil
+    import shutil
     # Copy the pilot config to a temp location to avoid path issues
     src = Path("configs/pilot.yaml")
     dst = tmp_path / "pilot.yaml"

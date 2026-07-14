@@ -13,7 +13,6 @@ import json
 import numpy as np
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Hand fixture validation (must pass EXACTLY — no tolerance)
 # ---------------------------------------------------------------------------
@@ -71,7 +70,7 @@ def test_phase0_reproduction_all_seeds() -> None:
     If any value is outside tolerance, the test fails and reports the deviation.
     Per DR-002: do NOT adjust tolerance or implementation to force a pass.
     """
-    from explaincheck.pilot.runner import run_pilot, check_reproduction
+    from explaincheck.pilot.runner import check_reproduction, run_pilot
 
     results, models, failures, timing = run_pilot()
     checks = check_reproduction(results, models)
@@ -110,7 +109,10 @@ def test_phase0_reproduction_all_seeds() -> None:
 def test_artifacts_schema_valid(tmp_path) -> None:
     """All output files must be present and the run-manifest.json must parse."""
     from explaincheck.pilot.runner import (
-        run_pilot, check_reproduction, write_outputs, manual_validation
+        check_reproduction,
+        manual_validation,
+        run_pilot,
+        write_outputs,
     )
 
     results, models, failures, timing = run_pilot(seeds=[11, 23])

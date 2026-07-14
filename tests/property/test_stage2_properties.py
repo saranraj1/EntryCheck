@@ -11,12 +11,11 @@ import math
 
 import numpy as np
 import pytest
-from hypothesis import given, settings, assume
+from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 
 from explaincheck.metrics.fidelity.aopc import deletion_fidelity_aopc_single
 from explaincheck.metrics.stability.top_k_jaccard import jaccard
-
 
 # ---------------------------------------------------------------------------
 # Fidelity properties

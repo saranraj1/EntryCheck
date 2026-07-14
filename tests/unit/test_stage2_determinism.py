@@ -9,11 +9,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from explaincheck.datasets.synthetic import generate, split
-from explaincheck.models.logistic_regression import LogisticRegressionAdapter
-from explaincheck.explainers.exact_linear import ExactLinearExplainer, RandomizedNegativeControl
-from explaincheck.datasets.synthetic import FEATURE_NAMES
 from explaincheck.contracts import ModelFamily
+from explaincheck.datasets.synthetic import FEATURE_NAMES, generate, split
+from explaincheck.explainers.exact_linear import ExactLinearExplainer, RandomizedNegativeControl
+from explaincheck.models.logistic_regression import LogisticRegressionAdapter
 
 
 @pytest.mark.unit
@@ -71,7 +70,7 @@ def test_exact_linear_determinism() -> None:
 
     a1 = _explain()
     a2 = _explain()
-    for i, (v1, v2) in enumerate(zip(a1, a2)):
+    for i, (v1, v2) in enumerate(zip(a1, a2, strict=False)):
         np.testing.assert_array_equal(v1, v2, err_msg=f"Mismatch at sample {i}")
 
 
@@ -95,7 +94,7 @@ def test_negative_control_seed_determinism() -> None:
 
     a1 = _explain()
     a2 = _explain()
-    for i, (v1, v2) in enumerate(zip(a1, a2)):
+    for i, (v1, v2) in enumerate(zip(a1, a2, strict=False)):
         np.testing.assert_array_equal(v1, v2, err_msg=f"Mismatch at sample {i}")
 
 

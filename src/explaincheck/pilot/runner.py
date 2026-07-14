@@ -14,7 +14,6 @@ Output contract (DR-002):
 from __future__ import annotations
 
 import json
-import math
 import time
 from pathlib import Path
 from typing import Any
@@ -22,30 +21,24 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from explaincheck import __protocol_version__, __study_id__, __version__
+from explaincheck import __protocol_version__, __study_id__
 from explaincheck.contracts import (
     AttributionRecord,
-    ExplainerName,
     FailureRecord,
-    MetricResult,
     ModelFamily,
-    RunLabel,
-    RunStatus,
 )
 from explaincheck.datasets.synthetic import (
     BETA_TRUE,
     FEATURE_NAMES,
-    dataset_record,
     generate,
     split,
     split_record,
 )
 from explaincheck.explainers.exact_linear import ExactLinearExplainer, RandomizedNegativeControl
 from explaincheck.metrics.fidelity.aopc import deletion_fidelity_aopc_single
-from explaincheck.metrics.stability.top_k_jaccard import TopKJaccardStability, jaccard
+from explaincheck.metrics.stability.top_k_jaccard import jaccard
 from explaincheck.models.logistic_regression import LogisticRegressionAdapter
 from explaincheck.provenance import (
-    hash_file,
     new_run_id,
     register_artifacts,
     snapshot_environment,
@@ -191,7 +184,6 @@ def _run_seed(seed: int, run_id: str) -> tuple[list[dict], dict, list[dict]]:
                 model_hash=model_record.model_hash,
                 sample_ids=sample_ids,
                 protocol_version=__protocol_version__,
-                model=lr,
             )
 
             good_attrs = [r for r in attr_records if isinstance(r, AttributionRecord)]
@@ -543,6 +535,8 @@ This artifact validates Stage 2 machinery. It is not evidence that ExplainCheck 
 
 
 def _write_figures(results: pd.DataFrame, figures_dir: Path) -> None:
+    import matplotlib
+    matplotlib.use("Agg")  # non-interactive backend — required for headless/CI environments
     import matplotlib.pyplot as plt
 
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10, "axes.titlesize": 12})
@@ -580,11 +574,12 @@ def _write_figures(results: pd.DataFrame, figures_dir: Path) -> None:
     var = results.groupby(["sample_size", "explainer", "metric"])["estimate"].std().reset_index(name="sd_across_seeds")
     fig, ax = plt.subplots(figsize=(7.2, 4.2), constrained_layout=True)
     markers = {"deletion_fidelity_aopc_at_3": "o", "stability_top3_jaccard": "s"}
-    for (method, metric), g in var.groupby(["explainer", "metric"]):
-        ax.plot(g.sample_size, g.sd_across_seeds, marker=markers.get(metric, "o"),
-                color=colors.get(method, "gray"), linestyle="-" if "fidelity" in metric else "--",
+    for (m_name, metr_name), g in var.groupby(["explainer", "metric"]):
+        method_str, metric_str = str(m_name), str(metr_name)
+        ax.plot(g.sample_size, g.sd_across_seeds, marker=markers.get(metric_str, "o"),
+                color=colors.get(method_str, "gray"), linestyle="-" if "fidelity" in metric_str else "--",
                 linewidth=2, markersize=6,
-                label=f"{labels.get(method, method)} · {'fidelity' if 'fidelity' in metric else 'stability'}")
+                label=f"{labels.get(method_str, method_str)} · {'fidelity' if 'fidelity' in metric_str else 'stability'}")
     ax.set_title("Variance decreases as evaluation sample size increases", loc="left", fontsize=12, fontweight="bold")
     ax.set_xlabel("Explanations evaluated per seed")
     ax.set_ylabel("Standard deviation across seeds")

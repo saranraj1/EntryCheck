@@ -98,7 +98,7 @@ class DeletionFidelityAOPC(BaseMetric):
             "aggregation": "mean_over_k_and_samples",
         }
 
-    def compute(
+    def compute(  # type: ignore[override]
         self,
         attributions: list[AttributionRecord],
         *,

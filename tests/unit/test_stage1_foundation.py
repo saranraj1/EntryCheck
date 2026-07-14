@@ -9,25 +9,21 @@ beyond the core install.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
 
 import explaincheck
 from explaincheck.contracts import (
-    DataSplit,
     ExplainerName,
     MetricFamily,
     ModelFamily,
     RunStatus,
 )
 from explaincheck.contracts.models import (
-    ArtifactEntry,
     DatasetRecord,
     FailureRecord,
     MetricResult,
-    RunManifest,
 )
 from explaincheck.provenance import (
     hash_bytes,
@@ -36,7 +32,6 @@ from explaincheck.provenance import (
     new_run_id,
     utc_now_iso,
 )
-
 
 # ---------------------------------------------------------------------------
 # Package metadata
@@ -199,7 +194,7 @@ def test_new_run_id_unique() -> None:
 @pytest.mark.unit
 def test_utc_now_iso_format() -> None:
     ts = utc_now_iso()
-    from datetime import datetime, timezone
+    from datetime import datetime
     # Must parse as UTC ISO-8601
     dt = datetime.fromisoformat(ts)
     assert dt.tzinfo is not None

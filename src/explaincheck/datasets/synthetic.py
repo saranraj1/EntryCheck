@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from explaincheck.contracts import DataSplit, DatasetRecord, SplitRecord, TaskType
-from explaincheck.provenance import hash_array, hash_string, utc_now_iso
+from explaincheck.contracts import DatasetRecord, SplitRecord, TaskType
+from explaincheck.provenance import hash_string, utc_now_iso
 
 # Frozen from Phase 0 / pilot.yaml
 BETA_TRUE = np.array([1.50, -1.20, 0.90, -0.70, 0.0, 0.0, 0.0, 0.0])

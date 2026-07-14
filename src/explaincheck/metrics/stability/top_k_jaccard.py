@@ -15,7 +15,6 @@ Record the rejection rate (proportion of pairs where class changed).
 
 from __future__ import annotations
 
-import math
 import time
 from typing import Any
 
@@ -24,7 +23,6 @@ import numpy as np
 from explaincheck.contracts import (
     AttributionRecord,
     ExplainerName,
-    ExplainerType,
     FailureRecord,
     MetricFamily,
     MetricResult,
@@ -93,7 +91,7 @@ class TopKJaccardStability(BaseMetric):
             "aggregation": "mean_over_preserved_pairs",
         }
 
-    def compute(
+    def compute(  # type: ignore[override]
         self,
         attributions: list[AttributionRecord],
         *,

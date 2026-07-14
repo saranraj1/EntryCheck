@@ -7,11 +7,16 @@ All tests are fast (< 2 seconds each), isolated, no I/O (except tmp_path).
 from __future__ import annotations
 
 import math
-from pathlib import Path
 
 import numpy as np
 import pytest
 
+from explaincheck.contracts import (
+    AttributionRecord,
+    ExplainerName,
+    ExplainerType,
+    ModelFamily,
+)
 from explaincheck.datasets.synthetic import (
     BETA_TRUE,
     FEATURE_NAMES,
@@ -19,17 +24,10 @@ from explaincheck.datasets.synthetic import (
     split,
     split_record,
 )
-from explaincheck.models.logistic_regression import LogisticRegressionAdapter
 from explaincheck.explainers.exact_linear import ExactLinearExplainer, RandomizedNegativeControl
-from explaincheck.metrics.fidelity.aopc import deletion_fidelity_aopc_single, DeletionFidelityAOPC
-from explaincheck.metrics.stability.top_k_jaccard import TopKJaccardStability, jaccard
-from explaincheck.contracts import (
-    AttributionRecord,
-    ExplainerName,
-    ExplainerType,
-    ModelFamily,
-)
-
+from explaincheck.metrics.fidelity.aopc import deletion_fidelity_aopc_single
+from explaincheck.metrics.stability.top_k_jaccard import jaccard
+from explaincheck.models.logistic_regression import LogisticRegressionAdapter
 
 # ---------------------------------------------------------------------------
 # Synthetic generator
@@ -217,7 +215,7 @@ def test_negative_control_same_magnitude() -> None:
                                          protocol_version="1.0.0")
                  if isinstance(r, AttributionRecord)]
 
-    for e, n in zip(exact_recs, neg_recs):
+    for e, n in zip(exact_recs, neg_recs, strict=False):
         np.testing.assert_allclose(
             sorted(e.attribution), sorted(n.attribution), atol=1e-12,
             err_msg="Negative control must be a permutation — sorted attributions must match."
@@ -291,7 +289,7 @@ def test_stability_disjoint_topk() -> None:
 @pytest.mark.unit
 def test_stability_negative_control_lower_than_exact() -> None:
     """Negative control must have strictly lower stability than exact (on average, 10 seeds)."""
-    from explaincheck.pilot.runner import FROZEN_SEEDS, EVAL_SIZES, jaccard as _jac, KMAX, SIGMA
+    from explaincheck.pilot.runner import FROZEN_SEEDS, KMAX, SIGMA
     results_exact, results_neg = [], []
     for seed in FROZEN_SEEDS[:3]:
         X, y = generate(seed)

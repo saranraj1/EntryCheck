@@ -45,6 +45,9 @@ class ExplainerType(str, Enum):
     LOCAL = "local"
     CONTROL_REFERENCE = "control_reference"
     CONTROL_NEGATIVE = "control_negative"
+    SHAP_TREE = "shap_tree"
+    SHAP_KERNEL = "shap_kernel"
+    LIME = "lime"
 
 
 class MetricFamily(str, Enum):
