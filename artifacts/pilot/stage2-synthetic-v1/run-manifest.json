@@ -6,6 +6,9 @@
   "runLabel": "infrastructure-pilot",
   "status": "pilot-not-confirmatory",
   "configHash": "072c0702fa58767f1f4d6811f58bffde96b5fdb654b6d32219be4cc78ff85031",
+  "gitCommit": "15bdc1ae99c6da57f37dd800cd41e50e2757c85a",
+  "provenanceCorrectedAt": "2026-07-14T07:51:00Z",
+  "provenanceCorrectionNote": "DR-003: full 40-char Stage 2 hash added. Scientific results unchanged.",
   "createdAt": "2026-07-14T07:33:12.069473+00:00",
   "environment": {
     "python_version": "3.12.9 (main, Mar 17 2025, 21:06:20) [MSC v.1943 64 bit (AMD64)]",
@@ -44,8 +47,9 @@
   ],
   "files": {
     "benchmark.json": {
-      "sha256": "f0e40ccec29b0c452667db16e49fe30113b3b1357278a62ceeef7b89c421cee9",
-      "bytes": 4433
+      "sha256": "09738c6e7f5679814dd857263ee81004f33a9113aebbe28079f7097d1452d0b3",
+      "bytes": 4433,
+      "provenance_corrected_dr003": true
     },
     "environment.json": {
       "sha256": "a930f73e38db4a4f0e0e16a0a839e488b54e2af30133dd0566c1a796c996c929",
@@ -76,8 +80,9 @@
       "bytes": 520
     },
     "model-card.md": {
-      "sha256": "791bd93025947164bbf49c6ba22e245b1d158a314af49e64b3064062ecc684ae",
-      "bytes": 2470
+      "sha256": "ebd3a5be1ff5dc3f6809cd55c77dc1e5398354157db16397c087e3feda2f41f9",
+      "bytes": 2470,
+      "provenance_corrected_dr003": true
     },
     "model-performance.csv": {
       "sha256": "eb717fa780ca387a8c45e4604c2cb23b20c51aaf677f0098989b698d199b448a",
@@ -96,8 +101,9 @@
       "bytes": 12542
     },
     "SHA256SUMS.txt": {
-      "sha256": "01a92b31bf11286d293935194c4bb6668b9a201f6624d89bbbbe486b8b8c9a4d",
-      "bytes": 1576
+      "sha256": "28bec1f63d1f9496084eab4f5a49a2de4b3b565319e2b7d1e4915244c0c9c6db",
+      "bytes": 1576,
+      "provenance_corrected_dr003": true
     },
     "tables\\table-s2-pilot-summary.csv": {
       "sha256": "159f1149a5610848f3138e00e20449c07383502bc72ad5d7f15b8790a425e8c9",

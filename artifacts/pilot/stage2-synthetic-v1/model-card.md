@@ -6,6 +6,9 @@ Infrastructure-pilot artifact (Stage 2). Not confirmatory. Not suitable for depl
 ## Run ID
 `ec-61cec97a`
 
+## Git commit (Stage 2)
+`15bdc1ae99c6da57f37dd800cd41e50e2757c85a` (DR-003 provenance correction: full 40-char hash recorded 2026-07-14)
+
 ## Model details
 - Model: custom L2-regularized logistic regression fitted by deterministic full-batch gradient descent
 - Data: synthetic independent Gaussian features

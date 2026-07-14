@@ -5,6 +5,9 @@
   "runId": "ec-61cec97a",
   "runLabel": "infrastructure-pilot",
   "status": "pilot-not-confirmatory",
+  "gitCommit": "15bdc1ae99c6da57f37dd800cd41e50e2757c85a",
+  "provenanceCorrectedAt": "2026-07-14T07:51:00Z",
+  "provenanceCorrectionNote": "DR-003: full 40-char Stage 2 hash added. Scientific results unchanged.",
   "design": {
     "seeds": [
       11,
