@@ -1,2 +1,4 @@
 """Runtime metrics — latency, memory, throughput."""
-# Stage 4 implementation: RuntimeMetric
+from explaincheck.metrics.runtime.runtime_metric import RuntimeMetric, timer_and_memory
+
+__all__ = ["RuntimeMetric", "timer_and_memory"]
