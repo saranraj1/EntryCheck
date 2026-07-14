@@ -1,0 +1,69 @@
+{
+  "studyId": "EC-SYNTH-LINEAR-PILOT-001",
+  "createdWith": {
+    "python": "3.13.13 (main, Apr 21 2026, 00:00:00) [GCC 11.5.0 20240719 (Red Hat 11.5.0-5)]",
+    "numpy": "2.5.1",
+    "pandas": "3.0.3",
+    "matplotlib": "3.11.0"
+  },
+  "platform": "Linux-5.10.174-x86_64-with-glibc2.34",
+  "command": "python3 run_phase0.py",
+  "files": {
+    "benchmark.json": {
+      "sha256": "5ffd05536cb693afe9db4dd3dc26e24cf598eb113a1d957a3eb680e13ac9c4d2",
+      "bytes": 3002
+    },
+    "figures/fig-1-pilot-metrics.pdf": {
+      "sha256": "b069afbee98bd022d96af005d3e88e8c246ccb095f144174ad4b2135fc7de8f0",
+      "bytes": 27066
+    },
+    "figures/fig-1-pilot-metrics.png": {
+      "sha256": "d6948a0108a2c568d10ce115a1b940b79c0e1b560b91a5c49c0e356531e860f7",
+      "bytes": 78879
+    },
+    "figures/fig-2-variance-pilot.pdf": {
+      "sha256": "5b949fb7e50caed83f0806f6b03a110585d2ee3729a9a4ef5d0dfc5bc849bc62",
+      "bytes": 23440
+    },
+    "figures/fig-2-variance-pilot.png": {
+      "sha256": "429b57cce3cb306299a3cd4ced60c91b6add0c52cc3be5ec611f50c37155da31",
+      "bytes": 107698
+    },
+    "manual-metric-validation.json": {
+      "sha256": "d2509f241a3c95ec1b20d02bb29fc75a1532a4c1ec15fdc6dc41b665b77e0e97",
+      "bytes": 487
+    },
+    "model-card.md": {
+      "sha256": "53da2440f32853cd629031d77af554b23abc240db6a6a1e31e52552013ade0f5",
+      "bytes": 1361
+    },
+    "model-performance.csv": {
+      "sha256": "af781ee4be36a3786f7d69244f09284c2480dd1d4356f43220e3ada645b6051f",
+      "bytes": 814
+    },
+    "paper-snippets/methods-generated.md": {
+      "sha256": "4d4ec0ff157dd61a33bd600394ebd30b0170c94d19fdc9d803e0ecc78f90f9aa",
+      "bytes": 1264
+    },
+    "paper-snippets/results-summary.md": {
+      "sha256": "69f68e571e574e4efd2ce265eb868720c461894e3373c5bbc8d9b60ee5bc6053",
+      "bytes": 614
+    },
+    "tables/table-p1-pilot-summary.csv": {
+      "sha256": "360cc8c604623d1ced75c7d3eaf7a03386512b67eab19703b0dec0c8db52ff0c",
+      "bytes": 1528
+    },
+    "tables/table-p1-pilot-summary.tex": {
+      "sha256": "b0f766635fba98cd3f51d208c37e35b83dbd4c76c618c98c64db6d553bc3c7e5",
+      "bytes": 385
+    },
+    "tables/table-p2-variance.csv": {
+      "sha256": "b4cda90f9a82cc5fcf44c8f5c8ef5c1681a6f939ce59666f6057c8ed2843b601",
+      "bytes": 886
+    },
+    "tidy-results.csv": {
+      "sha256": "62dd9fa2ca7e27089557fe309896832631ef8341c890503fad4a75c1dab20b0a",
+      "bytes": 15748
+    }
+  }
+}

@@ -1,0 +1,2 @@
+# Experiment manifests — run-manifest.json files from each completed run
+# This directory is append-only. Never delete or overwrite existing manifests.

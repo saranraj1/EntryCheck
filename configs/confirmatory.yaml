@@ -1,0 +1,53 @@
+# ExplainCheck — Confirmatory experiment configuration
+# LOCKED — may only be used after:
+#   1. OSF preregistration is externally timestamped
+#   2. Saranraj U gives explicit confirmatory-run approval
+#   3. All exit gates through Stage 8 are satisfied
+#
+# Any change to this file requires a dated amendment in amendments/
+# and Saranraj U approval.
+
+inherits: "protocol-v1.yaml"
+
+run_label: "confirmatory"
+status: "confirmatory"  # DO NOT set this until approval is given
+
+# All frozen seeds
+seeds: [11, 23, 37, 41, 53, 67, 71, 83, 97, 101]
+
+# All primary datasets
+datasets:
+  use: "primary"  # from protocol-v1.yaml
+
+# All three model families
+models:
+  use: "all"      # from protocol-v1.yaml
+
+# All three explainers + controls
+explainers:
+  use: "all"      # from protocol-v1.yaml
+
+sample_requirements:
+  min_explanations_per_dataset_model_seed: 200
+  min_stability_perturbations_per_sample: 20
+  min_bootstrap_replicates: 1000
+
+# Full metric suite
+metrics:
+  use: "all"  # from protocol-v1.yaml
+
+# Stressors — confirmatory
+stressors:
+  correlation:
+    rho_levels: [0.3, 0.6, 0.9]
+    measure: [individual_agreement, grouped_conservation]
+  missingness:
+    mechanisms: [MCAR, MAR]   # MNAR is exploratory — separate run
+    levels: [0.05, 0.10, 0.20, 0.30]
+    handlers: [median_mode, knn, iterative, native, indicator]
+
+output_dir: "artifacts/confirmatory"
+
+# Immutability guard — the pipeline must refuse to overwrite any existing
+# confirmatory artifact. Set overwrite_protection: true always.
+overwrite_protection: true

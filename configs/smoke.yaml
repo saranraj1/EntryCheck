@@ -1,0 +1,43 @@
+# ExplainCheck — Smoke test configuration
+# Purpose: fast infrastructure checks (< 60 seconds total)
+# Label: infrastructure-only — NOT confirmatory, NOT exploratory
+# Do not report results from this config as scientific findings.
+
+inherits: "protocol-v1.yaml"
+
+run_label: "smoke"
+status: "infrastructure-only"
+
+seeds: [11]  # single seed only
+
+sample_requirements:
+  min_explanations_per_dataset_model_seed: 10
+  min_stability_perturbations_per_sample: 3
+  min_bootstrap_replicates: 100
+
+datasets:
+  primary:
+    - name: breast_cancer_wisconsin   # smallest dataset first
+      n_rows_limit: 100              # use only 100 rows for speed
+    - name: adult
+      n_rows_limit: 200
+
+models:
+  - family: logistic_regression
+  # skip rf and xgboost in smoke to keep runtime under 60s
+
+explainers:
+  - name: exact_linear
+  - name: randomized_negative_control
+  # skip shap/lime in smoke
+
+metrics:
+  fidelity:
+    - name: deletion_fidelity_aopc
+      k_values: [3]
+  stability:
+    variants: [top_k_jaccard]
+    k_values: [3]
+  # skip runtime, correlation, missingness in smoke
+
+output_dir: "artifacts/smoke"

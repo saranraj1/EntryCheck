@@ -1,0 +1,110 @@
+[project]
+name = "explaincheck"
+version = "0.1.0-dev"
+description = "Stress-testing tabular feature attribution under correlation and missingness — publication-first benchmark"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Saranraj U" }
+]
+requires-python = "==3.12.*"
+keywords = ["explainability", "xai", "shap", "lime", "benchmark", "tabular", "fidelity", "stability"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    # Core scientific stack
+    "numpy>=1.26,<2.0",
+    "pandas>=2.1,<3.0",
+    "scipy>=1.12,<2.0",
+    # ML models
+    "scikit-learn>=1.4,<2.0",
+    "xgboost==2.1.4",           # FROZEN — do not upgrade after pilot environment lock
+    # Explainers
+    "shap>=0.45,<0.47",
+    "lime>=0.2.0.1,<0.3",
+    # Typed configuration and validation
+    "pydantic>=2.7,<3.0",
+    "pyyaml>=6.0,<7.0",
+    # Statistics
+    "statsmodels>=0.14,<0.15",
+    "pingouin>=0.5,<0.6",
+    # Reporting
+    "matplotlib>=3.8,<4.0",
+    "jinja2>=3.1,<4.0",
+    # CLI
+    "click>=8.1,<9.0",
+    # Hashing / provenance
+    "hashlib-compat>=1.0; python_version < '3.12'",  # stdlib fallback guard
+    # Data storage
+    "pyarrow>=15.0,<17.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9.0",
+    "pytest-cov>=5.0,<6.0",
+    "pytest-xdist>=3.5,<4.0",
+    "hypothesis>=6.100,<7.0",
+    "ruff>=0.4,<0.5",
+    "mypy>=1.10,<2.0",
+    "pandas-stubs",
+    "types-PyYAML",
+]
+
+[project.scripts]
+explaincheck = "explaincheck.cli.main:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/explaincheck"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "TCH", "ANN"]
+ignore = ["ANN101", "ANN102", "ANN401"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = false
+warn_return_any = true
+warn_unused_configs = true
+mypy_path = "src"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "-v",
+    "--tb=short",
+]
+markers = [
+    "unit: fast isolated unit tests",
+    "property: property-based tests using Hypothesis",
+    "integration: integration tests (may require installed packages)",
+    "golden: golden regression tests against frozen fixtures",
+    "scientific: scientific validation tests",
+    "smoke: quick smoke tests for infrastructure checks",
+    "slow: slow tests excluded from fast CI",
+]
+
+[tool.coverage.run]
+source = ["src/explaincheck"]
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

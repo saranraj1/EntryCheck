@@ -1,0 +1,248 @@
+# ExplainCheck Protocol v1.0 — Master Configuration
+# Study ID: EC-TABULAR-001
+# FROZEN — do not modify without a dated amendment in amendments/
+# Any change requires: amendment ID, date, inspection status, Saranraj U approval
+
+protocol_version: "1.0.0"
+study_id: "EC-TABULAR-001"
+accountable_researcher: "Saranraj U"
+status: "pre-confirmatory"  # changes to "confirmatory" only after OSF registration + approval
+
+# ---------------------------------------------------------------------------
+# Random seeds (frozen)
+# ---------------------------------------------------------------------------
+seeds: [11, 23, 37, 41, 53, 67, 71, 83, 97, 101]
+
+# ---------------------------------------------------------------------------
+# Datasets (frozen)
+# ---------------------------------------------------------------------------
+datasets:
+  primary:
+    - name: adult
+      doi: "10.24432/C5XW20"
+      url: "https://archive.ics.uci.edu/dataset/2/adult"
+      license: "CC BY 4.0"
+      missing_token: "?"
+      target_column: "income"
+      positive_class: ">50K"
+      exclude_from_primary: []
+      subgroup_columns: ["sex", "race"]
+      notes: "Historical 1994 sample. Treat ? as missing. Do not claim current representativeness."
+    - name: german_credit
+      doi: "10.24432/C5NC77"
+      url: "https://archive.ics.uci.edu/dataset/144/statlog+german+credit+data"
+      license: "CC BY 4.0"
+      target_column: "class"
+      positive_class: 1
+      exclude_from_primary: []
+      subgroup_columns: ["sex_marital", "age_group"]
+      notes: "Small sample. Report uncertainty. No deployment claims."
+    - name: bank_marketing
+      doi: "10.24432/C5K306"
+      url: "https://archive.ics.uci.edu/dataset/222/bank+marketing"
+      license: "CC BY 4.0"
+      target_column: "y"
+      positive_class: "yes"
+      exclude_from_primary: ["duration"]  # FROZEN: duration leaks post-contact info
+      duration_sensitivity_analysis: true
+      temporal_split: true
+      subgroup_columns: []
+      notes: "Exclude duration from primary model. Temporal ordering must be preserved."
+    - name: breast_cancer_wisconsin
+      doi: "10.24432/C5DW2B"
+      url: "https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic"
+      license: "CC BY 4.0"
+      target_column: "diagnosis"
+      positive_class: "M"
+      exclude_from_primary: []
+      subgroup_columns: []
+      role: "correlation_robustness_primary"
+      notes: "Use for correlation track only. No clinical or diagnostic claims."
+  reserve:
+    - name: spambase
+      doi: "10.24432/C53G6X"
+      url: "https://archive.ics.uci.edu/dataset/94/spambase"
+      license: "CC BY 4.0"
+      target_column: "class"
+      positive_class: 1
+      role: "dimensionality_runtime_reserve"
+      notes: "Collection-specific non-spam indicators. Reserve only."
+
+# ---------------------------------------------------------------------------
+# Models (frozen)
+# ---------------------------------------------------------------------------
+models:
+  - family: logistic_regression
+    implementation: "sklearn.linear_model.LogisticRegression"
+    hyperparameters:
+      max_iter: 1000
+      solver: "lbfgs"
+      random_state: null  # overridden per seed
+    notes: "Seed passed as random_state at runtime."
+  - family: random_forest
+    implementation: "sklearn.ensemble.RandomForestClassifier"
+    hyperparameters:
+      n_estimators: 100
+      random_state: null  # overridden per seed
+      n_jobs: 1           # deterministic for runtime measurement
+    notes: "n_jobs=1 required during controlled runtime measurements."
+  - family: xgboost
+    implementation: "xgboost.XGBClassifier"
+    version_frozen: "2.1.4"   # FROZEN — do not upgrade
+    hyperparameters:
+      n_estimators: 100
+      tree_method: "hist"
+      device: "cpu"            # CPU only; no GPU
+      n_jobs: 1                # n_jobs=1 during runtime measurement
+      seed: null               # overridden per seed
+      eval_metric: "logloss"
+    notes: "TreeSHAP compatible. CPU only. Seed passed explicitly at runtime."
+
+# ---------------------------------------------------------------------------
+# Explainers (frozen)
+# ---------------------------------------------------------------------------
+explainers:
+  - name: tree_shap
+    library: shap
+    class: "shap.TreeExplainer"
+    compatible_models: ["random_forest", "xgboost"]
+    target_class: 1
+    record: [background_dataset, library_version, target_class, seed]
+    notes: "Use model-specific TreeSHAP. Not applicable to logistic_regression."
+  - name: kernel_shap
+    library: shap
+    class: "shap.KernelExplainer"
+    compatible_models: ["logistic_regression", "random_forest", "xgboost"]
+    background_n_samples: 100
+    n_samples: 512
+    target_class: 1
+    record: [background_dataset_hash, n_samples, target_class, seed, library_version]
+  - name: lime
+    library: lime
+    class: "lime.lime_tabular.LimeTabularExplainer"
+    compatible_models: ["logistic_regression", "random_forest", "xgboost"]
+    n_samples: 5000
+    kernel_width: null  # lime default
+    discretize_continuous: true
+    target_class: 1
+    record: [n_samples, kernel_width, discretize_continuous, target_class, seed, library_version]
+  - name: exact_linear
+    type: control_reference
+    compatible_models: ["logistic_regression"]
+    notes: "Analytic reference: learned_weight * (x - training_mean). Not a competitive method."
+  - name: randomized_negative_control
+    type: control_negative
+    compatible_models: ["logistic_regression", "random_forest", "xgboost"]
+    notes: "Within-instance permutation of attribution values. Not a competitive method."
+
+# ---------------------------------------------------------------------------
+# Primary metrics (frozen)
+# ---------------------------------------------------------------------------
+metrics:
+  fidelity:
+    - name: deletion_fidelity_aopc
+      replacement: training_mean  # data-aware replacement
+      k_max: null                  # set per evaluation size
+      k_values: [3, 5, 10]
+      record_replacement_baseline: true
+  stability:
+    prediction_preservation: true    # MANDATORY for all stability metrics
+    record_rejection_rate: true
+    perturbation_sigma: 0.05
+    n_perturbations: 20
+    variants:
+      - cosine_similarity
+      - spearman_rank_correlation
+      - top_k_jaccard
+    k_values: [3, 5, 10]
+  sparsity:
+    - name: k90_attribution_mass
+      threshold: 0.90
+  runtime:
+    measure:
+      - initialization_ms
+      - explanation_p50_ms
+      - explanation_p95_ms
+      - explanation_p99_ms
+      - memory_peak_mb
+      - throughput_explanations_per_second
+    n_jobs_locked: 1
+  correlation_robustness:
+    rho_levels: [0.3, 0.6, 0.9]
+    measure_individual_agreement: true
+    measure_grouped_conservation: true
+    confirmatory: true
+  missingness_sensitivity:
+    levels: [0.05, 0.10, 0.20, 0.30]
+    mechanisms:
+      confirmatory: [MCAR, MAR]
+      exploratory: [MNAR]
+    handlers:
+      - median_mode
+      - knn
+      - iterative
+      - native        # model-native handling where supported
+      - indicator     # missing indicator columns
+    prediction_preservation: true
+    keep_native_and_induced_separate: true
+  subgroup:
+    report_gaps: true
+    report_effect_sizes: true
+    report_confidence_intervals: true
+    ci_level: 0.95
+    bootstrap_replicates: 1000
+
+# ---------------------------------------------------------------------------
+# Statistical analysis plan (frozen)
+# ---------------------------------------------------------------------------
+statistics:
+  primary_model: "mixed_effects"
+  formula: "metric ~ explainer * model_family * stress_level + (1|dataset) + (1|seed)"
+  fallback: "friedman_aligned_rank"
+  multiple_comparisons: "holm"
+  effect_size: "cohens_d_or_rank_biserial"
+  uncertainty: "stratified_bootstrap"
+  bootstrap_replicates: 1000
+  unit_of_independence: "trained_model"  # NOT individual explanation
+  report_per_dataset_before_aggregate: true
+  avoid_composite_score: true
+
+# ---------------------------------------------------------------------------
+# Exclusion rules (frozen)
+# ---------------------------------------------------------------------------
+exclusions:
+  allowed_reasons:
+    - "corrupted_artifact"
+    - "deterministic_implementation_failure_with_minimal_reproducer"
+    - "prespecified_numerical_invalidity"
+  forbidden_reasons:
+    - "weakens_hypothesis"
+    - "outlier_removal"
+  preserve_all_failures_in: "failures.csv"
+
+# ---------------------------------------------------------------------------
+# Minimum sample requirements (frozen)
+# ---------------------------------------------------------------------------
+sample_requirements:
+  min_explanations_per_dataset_model_seed: 200
+  min_stability_perturbations_per_sample: 20
+  min_bootstrap_replicates: 1000
+
+# ---------------------------------------------------------------------------
+# Output contract
+# ---------------------------------------------------------------------------
+output_contract:
+  required_per_frozen_run:
+    - run-manifest.json
+    - environment.json
+    - raw-results.parquet
+    - tidy-results.csv
+    - failures.csv
+    - statistical-tests.csv
+    - benchmark.json
+    - model-card.md
+    - paper-snippets/methods-generated.md
+    - paper-snippets/results-generated.md
+    - tables/
+    - figures/
+    - checksums.sha256

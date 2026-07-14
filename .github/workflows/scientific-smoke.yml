@@ -1,0 +1,57 @@
+name: Scientific Smoke Test
+
+# Runs the synthetic pilot on every push to verify the pipeline hasn't
+# regressed scientifically. Results are labelled infrastructure-only and
+# must NOT be interpreted as confirmatory findings.
+
+on:
+  push:
+    branches: [main, develop]
+  schedule:
+    - cron: "0 2 * * 1"  # Weekly Monday 02:00 UTC
+
+jobs:
+  scientific-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Capture environment snapshot
+        run: uv run explaincheck env-snapshot --out artifacts/smoke/environment.json
+        continue-on-error: true
+
+      - name: Run synthetic pilot (infrastructure-only)
+        run: |
+          uv run explaincheck pilot synthetic \
+            --config configs/pilot.yaml \
+            --out artifacts/smoke/ \
+            --dry-run
+        # --dry-run until Stage 2 runner is implemented
+
+      - name: Validate artifact checksums
+        if: always()
+        run: |
+          if [ -f artifacts/smoke/run-manifest.json ]; then
+            uv run explaincheck validate-artifacts --dir artifacts/smoke/
+          else
+            echo "No manifest yet (Stage 2 pending) — skipping checksum validation"
+          fi
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-artifacts
+          path: artifacts/smoke/
+          retention-days: 7

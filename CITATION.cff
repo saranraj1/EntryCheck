@@ -1,0 +1,51 @@
+cff-version: 1.2.0
+message: "If you use ExplainCheck, please cite it as below."
+type: software
+title: "ExplainCheck: Stress-Testing Tabular Feature Attribution under Correlation and Missingness"
+version: "0.1.0-dev"
+date-released: "2026-07-14"
+license: MIT
+repository-code: "https://github.com/saranraju/ExplainCheck"  # update when public
+
+authors:
+  - family-names: "U"
+    given-names: "Saranraj"
+    orcid: ""  # add ORCID when available
+
+abstract: >
+  ExplainCheck is a publication-first benchmark that evaluates local tabular
+  feature-attribution methods (TreeSHAP, KernelSHAP, LIME) across seven
+  measurement dimensions: deletion fidelity, prediction-conditioned stability,
+  attribution-mass sparsity, runtime, correlation robustness, missingness
+  sensitivity, and subgroup consistency. It produces immutable machine-readable
+  benchmark results, model cards, paper-ready tables and figures, and CI/CD
+  explanation-regression gates.
+
+keywords:
+  - explainability
+  - xai
+  - shap
+  - lime
+  - benchmark
+  - tabular
+  - fidelity
+  - stability
+  - missingness
+  - correlation
+
+# Preregistration — record DOI here once externally deposited
+# references:
+#   - type: generic
+#     title: "ExplainCheck OSF Preregistration"
+#     url: ""
+#     doi: ""
+#     date-accessed: ""
+
+preferred-citation:
+  type: article
+  title: "ExplainCheck: Stress-Testing Tabular Feature Attribution under Correlation and Missingness"
+  authors:
+    - family-names: "U"
+      given-names: "Saranraj"
+  year: 2026
+  notes: "Manuscript in preparation. See preregistration for protocol."

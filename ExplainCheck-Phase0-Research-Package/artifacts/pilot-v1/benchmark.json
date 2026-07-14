@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "1.0.0",
+  "protocolVersion": "1.0.0-rc1",
+  "studyId": "EC-SYNTH-LINEAR-PILOT-001",
+  "status": "pilot-not-confirmatory",
+  "design": {
+    "seeds": [
+      11,
+      23,
+      37,
+      41,
+      53,
+      67,
+      71,
+      83,
+      97,
+      101
+    ],
+    "sampleSizes": [
+      50,
+      100,
+      200
+    ],
+    "features": [
+      "x1",
+      "x2",
+      "x3",
+      "x4",
+      "x5",
+      "x6",
+      "x7",
+      "x8"
+    ],
+    "trueCoefficients": [
+      1.5,
+      -1.2,
+      0.9,
+      -0.7,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "nGeneratedPerSeed": 3000,
+    "explainers": [
+      "exact_linear",
+      "randomized_negative_control"
+    ],
+    "metrics": [
+      "deletion_fidelity_aopc_at_3",
+      "stability_top3_jaccard"
+    ]
+  },
+  "manualValidation": {
+    "fixture": {
+      "x": [
+        2.0,
+        1.0,
+        1.0
+      ],
+      "x_prime": [
+        2.01,
+        0.98,
+        1.02
+      ],
+      "weights": [
+        1.0,
+        0.5,
+        0.2
+      ],
+      "baseline": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "attribution": [
+      2.0,
+      0.5,
+      0.2
+    ],
+    "fidelity_aopc_at_2_hand_expected": 2.25,
+    "fidelity_aopc_at_2_computed": 2.25,
+    "stability_jaccard_at_2_hand_expected": 1.0,
+    "stability_jaccard_at_2_computed": 1.0,
+    "status": "passed"
+  },
+  "modelPerformance": {
+    "accuracy": {
+      "mean": 0.7975,
+      "sd": 0.018496746460651668
+    },
+    "roc_auc": {
+      "mean": 0.8778359041575527,
+      "sd": 0.015198940618901464
+    },
+    "coefficient_cosine_to_truth": {
+      "mean": 0.9980257300674118,
+      "sd": 0.0010746410442323594
+    },
+    "fit_ms": {
+      "mean": 75.8211450000033,
+      "sd": 6.327967896643573
+    }
+  },
+  "resultsAtN200": [
+    {
+      "explainer": "exact_linear",
+      "metric": "deletion_fidelity_aopc_at_3",
+      "sampleSize": 200,
+      "estimate": 1.7636353114942112,
+      "sdAcrossSeeds": 0.08031625001556465
+    },
+    {
+      "explainer": "exact_linear",
+      "metric": "stability_top3_jaccard",
+      "sampleSize": 200,
+      "estimate": 0.9572082001505224,
+      "sdAcrossSeeds": 0.012421370686059568
+    },
+    {
+      "explainer": "randomized_negative_control",
+      "metric": "deletion_fidelity_aopc_at_3",
+      "sampleSize": 200,
+      "estimate": 0.7529891501853399,
+      "sdAcrossSeeds": 0.047748779960204935
+    },
+    {
+      "explainer": "randomized_negative_control",
+      "metric": "stability_top3_jaccard",
+      "sampleSize": 200,
+      "estimate": 0.2588315628787113,
+      "sdAcrossSeeds": 0.013883527888333268
+    }
+  ],
+  "timing": {
+    "elapsed_seconds": 2.6024936219999972
+  },
+  "limitations": [
+    "Pilot uses a controlled linear-logit setting and does not establish performance on nonlinear or real-world data.",
+    "Randomized attribution is a negative control, not a competitive explanation method.",
+    "Pilot thresholds are engineering diagnostics and are not universal XAI standards."
+  ]
+}
