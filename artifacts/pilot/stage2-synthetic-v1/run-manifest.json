@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "1.0.0",
+  "runId": "ec-61cec97a",
+  "studyId": "EC-TABULAR-001",
+  "protocolVersion": "1.0.0",
+  "runLabel": "infrastructure-pilot",
+  "status": "pilot-not-confirmatory",
+  "configHash": "072c0702fa58767f1f4d6811f58bffde96b5fdb654b6d32219be4cc78ff85031",
+  "createdAt": "2026-07-14T07:33:12.069473+00:00",
+  "environment": {
+    "python_version": "3.12.9 (main, Mar 17 2025, 21:06:20) [MSC v.1943 64 bit (AMD64)]",
+    "numpy_version": "1.26.4",
+    "pandas_version": "2.3.3",
+    "sklearn_version": "1.9.0",
+    "xgboost_version": "2.1.4",
+    "shap_version": "0.46.0",
+    "lime_version": "0.2.0.1",
+    "matplotlib_version": "3.11.0",
+    "pydantic_version": "2.13.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cpu_count": "AMD64"
+  },
+  "seeds": [
+    11,
+    23,
+    37,
+    41,
+    53,
+    67,
+    71,
+    83,
+    97,
+    101
+  ],
+  "datasets": [
+    "synthetic_linear"
+  ],
+  "models": [
+    "logistic_regression"
+  ],
+  "explainers": [
+    "exact_linear",
+    "randomized_negative_control"
+  ],
+  "files": {
+    "benchmark.json": {
+      "sha256": "f0e40ccec29b0c452667db16e49fe30113b3b1357278a62ceeef7b89c421cee9",
+      "bytes": 4433
+    },
+    "environment.json": {
+      "sha256": "a930f73e38db4a4f0e0e16a0a839e488b54e2af30133dd0566c1a796c996c929",
+      "bytes": 410
+    },
+    "failures.csv": {
+      "sha256": "3d160a93e2666917592ef2de49f323386a95660935bfd7ba9a5844933c0bb133",
+      "bytes": 46
+    },
+    "figures\\fig-s2-pilot-metrics.pdf": {
+      "sha256": "d083d56b340f5a5a1a68ff502c1428e04579a86b82070f70e28bf258acbd6d6b",
+      "bytes": 27880
+    },
+    "figures\\fig-s2-pilot-metrics.png": {
+      "sha256": "0308a4ffbb208a09e80289a58e635565730b5752b602d37164149f98550ee8e2",
+      "bytes": 73314
+    },
+    "figures\\fig-s2-variance.pdf": {
+      "sha256": "d66ceb88d11b09b9d64305e5258a6b225416515f5f35777ba1f8e68c259d5530",
+      "bytes": 24365
+    },
+    "figures\\fig-s2-variance.png": {
+      "sha256": "9177f357b9dc07b0aac5e4de1620c3a9448aed43b73b3eae715e9c85b9ec4451",
+      "bytes": 101463
+    },
+    "manual-metric-validation.json": {
+      "sha256": "defe353e8a09da8505846aa0246a09faddce7b8f8b07e107b097c5596b524f88",
+      "bytes": 520
+    },
+    "model-card.md": {
+      "sha256": "791bd93025947164bbf49c6ba22e245b1d158a314af49e64b3064062ecc684ae",
+      "bytes": 2470
+    },
+    "model-performance.csv": {
+      "sha256": "eb717fa780ca387a8c45e4604c2cb23b20c51aaf677f0098989b698d199b448a",
+      "bytes": 833
+    },
+    "paper-snippets\\methods-generated.md": {
+      "sha256": "59ee9c44da9d82734e14f1b62244810976e63e591a91678bde67330326c74147",
+      "bytes": 1469
+    },
+    "paper-snippets\\results-generated.md": {
+      "sha256": "5c7458b78d556a0039d71d15510749c0edbc9feba13c6157aec2a909499f2998",
+      "bytes": 684
+    },
+    "raw-results.parquet": {
+      "sha256": "d582cb7749e0e8b108d7938f7807d51809925242b84647064d5218d35c0dc5b6",
+      "bytes": 12542
+    },
+    "SHA256SUMS.txt": {
+      "sha256": "01a92b31bf11286d293935194c4bb6668b9a201f6624d89bbbbe486b8b8c9a4d",
+      "bytes": 1576
+    },
+    "tables\\table-s2-pilot-summary.csv": {
+      "sha256": "159f1149a5610848f3138e00e20449c07383502bc72ad5d7f15b8790a425e8c9",
+      "bytes": 1558
+    },
+    "tables\\table-s2-pilot-summary.tex": {
+      "sha256": "433dff81978058ded828b163be1074f89fcaf9e779e4dbe5d162b21a9a2f02e2",
+      "bytes": 394
+    },
+    "tables\\table-s2-variance.csv": {
+      "sha256": "6f98943bcfc0c779026b2f6d8feb23c738020af2f8e68272b79e5d76c91d34b3",
+      "bytes": 893
+    },
+    "tidy-results.csv": {
+      "sha256": "8a353d8bbdf0d5a0a601a45f3c1188d04792b71d3a9994819d7addc320b14263",
+      "bytes": 16394
+    }
+  },
+  "nSuccesses": 120,
+  "nFailures": 0,
+  "nExcluded": 0,
+  "elapsedSeconds": 9.26253159999942,
+  "limitations": [
+    "Pilot uses a controlled linear-logit setting; does not establish performance on nonlinear or real-world data.",
+    "Randomized attribution is a negative control, not a competitive explainer.",
+    "Pilot thresholds are engineering diagnostics and are not universal XAI standards.",
+    "Stage 2 infrastructure-pilot results must not be interpreted as evidence about SHAP, LIME, XGBoost, or real-world datasets."
+  ],
+  "osfRegistrationUrl": null
+}

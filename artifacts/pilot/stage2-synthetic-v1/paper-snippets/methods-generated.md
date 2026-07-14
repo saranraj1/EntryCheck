@@ -1,0 +1,7 @@
+# Generated Methods Snippet — Stage 2 Synthetic Pilot
+
+For each of ten prespecified random seeds, 3,000 observations with eight independent standard-normal features were generated. Binary outcomes were sampled from a logistic model with coefficients (1.50, −1.20, 0.90, −0.70, 0, 0, 0, 0) and intercept −0.15. Data were divided into 80% training and 20% test partitions using a seed-specific deterministic permutation. An L2-regularized logistic-regression model was fitted by full-batch gradient descent (steps=1800, lr=0.12, λ=10⁻³). Local exact-linear attributions were defined as the learned coefficient multiplied by the feature's deviation from the training-set mean. A within-instance randomized permutation of these attributions served as a negative control.
+
+Deletion fidelity was operationalized as the mean cumulative absolute change in model logit after replacing the three highest-ranked features with their training-set means. Stability was operationalized as Top-3 Jaccard overlap after Gaussian input perturbation (σ=0.05), restricted to pairs whose predicted class was preserved. Metrics were estimated at evaluation sample sizes of 50, 100, and 200 per seed. The pilot reports across-seed variation and 1,000-replicate within-run bootstrap intervals; it is not a confirmatory hypothesis test.
+
+Run ID: ec-61cec97a. Label: infrastructure-pilot. Must not be interpreted as evidence about SHAP, LIME, XGBoost, or real-world datasets.

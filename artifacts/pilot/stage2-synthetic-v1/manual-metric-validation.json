@@ -1,0 +1,34 @@
+{
+  "fixture": {
+    "x": [
+      2.0,
+      1.0,
+      1.0
+    ],
+    "x_prime": [
+      2.01,
+      0.98,
+      1.02
+    ],
+    "weights": [
+      1.0,
+      0.5,
+      0.2
+    ],
+    "baseline": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "attribution": [
+    2.0,
+    0.5,
+    0.2
+  ],
+  "fidelity_aopc_at_2_hand_expected": 2.25,
+  "fidelity_aopc_at_2_computed": 2.25,
+  "stability_jaccard_at_2_hand_expected": 1.0,
+  "stability_jaccard_at_2_computed": 1.0,
+  "status": "passed"
+}

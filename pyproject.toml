@@ -39,8 +39,6 @@ dependencies = [
     "jinja2>=3.1,<4.0",
     # CLI
     "click>=8.1,<9.0",
-    # Hashing / provenance
-    "hashlib-compat>=1.0; python_version < '3.12'",  # stdlib fallback guard
     # Data storage
     "pyarrow>=15.0,<17.0",
 ]

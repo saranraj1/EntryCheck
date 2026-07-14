@@ -1,0 +1,13 @@
+{
+  "python_version": "3.12.9 (main, Mar 17 2025, 21:06:20) [MSC v.1943 64 bit (AMD64)]",
+  "numpy_version": "1.26.4",
+  "pandas_version": "2.3.3",
+  "sklearn_version": "1.9.0",
+  "xgboost_version": "2.1.4",
+  "shap_version": "0.46.0",
+  "lime_version": "0.2.0.1",
+  "matplotlib_version": "3.11.0",
+  "pydantic_version": "2.13.4",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "cpu_count": "AMD64"
+}

@@ -36,12 +36,12 @@ def pilot() -> None:
 
 
 @pilot.command("synthetic")
-@click.option("--config", required=True, type=click.Path(exists=True), help="YAML config path.")
-@click.option("--out", default=None, type=click.Path(), help="Output directory override.")
+@click.option("--config", default="configs/pilot.yaml", type=click.Path(exists=True), help="YAML config path.")
+@click.option("--out", default="artifacts/pilot/stage2-synthetic-v1", type=click.Path(), help="Output directory.")
 @click.option("--dry-run", is_flag=True, default=False, help="Validate config without running.")
 def pilot_synthetic(config: str, out: str | None, dry_run: bool) -> None:
     """
-    Run the synthetic linear-logit pilot.
+    Run the synthetic linear-logit pilot (Stage 2).
 
     Reproduces Phase 0 results within declared tolerance.
     Label: infrastructure-pilot (not confirmatory).
@@ -63,13 +63,47 @@ def pilot_synthetic(config: str, out: str | None, dry_run: bool) -> None:
     click.echo(f"Run label:   {cfg.run_label}")
     click.echo(f"Status:      {cfg.status}")
     click.echo(f"Seeds:       {cfg.seeds}")
+    click.echo(f"Output dir:  {out}")
 
     if dry_run:
         click.echo("[DRY RUN] Config valid. No experiment executed.")
         return
 
-    # Stage 2 implementation will import and run the pilot here.
-    click.echo("[STUB] Synthetic pilot runner — Stage 2 implementation pending.")
+    from pathlib import Path
+    from explaincheck.pilot.runner import manual_validation, run_pilot, check_reproduction, write_outputs
+    import json
+
+    click.echo("\n[1/4] Running manual validation fixture...")
+    validation = manual_validation()
+    click.echo(f"  Fidelity AOPC@2 = {validation['fidelity_aopc_at_2_computed']:.12f}  (expected 2.25) - {validation['status'].upper()}")
+    click.echo(f"  Stability Jaccard@2 = {validation['stability_jaccard_at_2_computed']:.12f}  (expected 1.0) - {validation['status'].upper()}")
+
+    seeds = cfg.seeds if cfg.seeds else [11, 23, 37, 41, 53, 67, 71, 83, 97, 101]
+
+    click.echo(f"\n[2/4] Running pilot across {len(seeds)} seeds...")
+    results, models, failures, timing = run_pilot(seeds=seeds)
+
+    click.echo(f"\n[3/4] Checking Phase 0 reproduction tolerances...")
+    reproduction = check_reproduction(results, models)
+    for k, v in reproduction.items():
+        if k.startswith("_"):
+            continue
+        status = "PASS" if v.get("passed") else "FAIL"
+        click.echo(f"  [{status}]  {k}: got={v['got']}  ref={v['reference']}  tol=+-{v['tolerance']}")
+
+    if not reproduction.get("_all_passed"):
+        click.echo("\n[WARNING] Some reproduction checks FAILED. Inspect variance report in benchmark.json.")
+
+    click.echo(f"\n[4/4] Writing outputs to {out}...")
+    out_dir = Path(out)
+    run_id = write_outputs(results, models, failures, validation, timing, reproduction, out_dir, config_hash=cfg_hash)
+
+    click.echo(f"\n[DONE] Run ID: {run_id}")
+    click.echo(f"       Elapsed: {timing['elapsed_seconds']:.1f}s")
+    click.echo(f"       Artifacts: {out_dir.resolve()}")
+    click.echo(f"       ROC AUC: {models.roc_auc.mean():.3f} ± {models.roc_auc.std():.3f}")
+    click.echo(f"\n[NOTE] Label: infrastructure-pilot. Do not interpret as confirmatory evidence.")
+
 
 
 # ---------------------------------------------------------------------------
