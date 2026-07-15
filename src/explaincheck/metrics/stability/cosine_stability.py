@@ -172,7 +172,40 @@ class CosineStability(BaseMetric):
 
                 if not preserved_mask[i]:
                     rt = (time.perf_counter() - t0) * 1000
-                    results.append(MetricResult(
+                    results.append(
+                        MetricResult(
+                            run_id=run_id,
+                            protocol_version=protocol_version,
+                            dataset=dataset,
+                            dataset_version=dataset_version,
+                            split_hash=split_hash,
+                            model_family=model_family,
+                            model_hash=model_hash,
+                            explainer=rec.explainer,
+                            explainer_version=rec.explainer_version,
+                            seed=seed,
+                            sample_id=rec.sample_id,
+                            metric_family=self.family,
+                            metric_name=self.name,
+                            stressor=stressor,
+                            stress_level=stress_level,
+                            subgroup=subgroup,
+                            subgroup_value=subgroup_value,
+                            prediction_preservation_status=PredictionPreservationStatus.NOT_PRESERVED,
+                            n_perturbations_total=n_total,
+                            n_perturbations_rejected=n_rejected,
+                            estimate=float("nan"),
+                            runtime_ms=rt,
+                            status=RunStatus.EXCLUDED,
+                            failure_reason="Prediction changed after perturbation (excluded by prediction-preservation filter).",
+                        )
+                    )
+                    continue
+
+                score = cosine_similarity_pair(attr_orig, attr_pert)
+                rt = (time.perf_counter() - t0) * 1000
+                results.append(
+                    MetricResult(
                         run_id=run_id,
                         protocol_version=protocol_version,
                         dataset=dataset,
@@ -190,57 +223,30 @@ class CosineStability(BaseMetric):
                         stress_level=stress_level,
                         subgroup=subgroup,
                         subgroup_value=subgroup_value,
-                        prediction_preservation_status=PredictionPreservationStatus.NOT_PRESERVED,
+                        prediction_preservation_status=PredictionPreservationStatus.PRESERVED,
                         n_perturbations_total=n_total,
                         n_perturbations_rejected=n_rejected,
-                        estimate=float("nan"),
+                        estimate=score,
                         runtime_ms=rt,
-                        status=RunStatus.EXCLUDED,
-                        failure_reason="Prediction changed after perturbation (excluded by prediction-preservation filter).",
-                    ))
-                    continue
-
-                score = cosine_similarity_pair(attr_orig, attr_pert)
-                rt = (time.perf_counter() - t0) * 1000
-                results.append(MetricResult(
-                    run_id=run_id,
-                    protocol_version=protocol_version,
-                    dataset=dataset,
-                    dataset_version=dataset_version,
-                    split_hash=split_hash,
-                    model_family=model_family,
-                    model_hash=model_hash,
-                    explainer=rec.explainer,
-                    explainer_version=rec.explainer_version,
-                    seed=seed,
-                    sample_id=rec.sample_id,
-                    metric_family=self.family,
-                    metric_name=self.name,
-                    stressor=stressor,
-                    stress_level=stress_level,
-                    subgroup=subgroup,
-                    subgroup_value=subgroup_value,
-                    prediction_preservation_status=PredictionPreservationStatus.PRESERVED,
-                    n_perturbations_total=n_total,
-                    n_perturbations_rejected=n_rejected,
-                    estimate=score,
-                    runtime_ms=rt,
-                    status=RunStatus.SUCCESS,
-                ))
+                        status=RunStatus.SUCCESS,
+                    )
+                )
 
             except Exception as exc:
                 rt = (time.perf_counter() - t0) * 1000
-                results.append(FailureRecord(
-                    run_id=run_id,
-                    timestamp=utc_now_iso(),
-                    dataset=dataset,
-                    model_family=model_family,
-                    explainer=rec.explainer,
-                    metric_name=self.name,
-                    seed=seed,
-                    failure_reason=str(exc),
-                    is_deterministic=True,
-                    excluded=False,
-                ))
+                results.append(
+                    FailureRecord(
+                        run_id=run_id,
+                        timestamp=utc_now_iso(),
+                        dataset=dataset,
+                        model_family=model_family,
+                        explainer=rec.explainer,
+                        metric_name=self.name,
+                        seed=seed,
+                        failure_reason=str(exc),
+                        is_deterministic=True,
+                        excluded=False,
+                    )
+                )
 
         return results

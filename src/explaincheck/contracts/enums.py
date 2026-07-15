@@ -12,6 +12,7 @@ from enum import Enum
 
 class RunStatus(str, Enum):
     """Terminal status of a single pipeline cell."""
+
     SUCCESS = "success"
     FAILURE = "failure"
     EXCLUDED = "excluded"

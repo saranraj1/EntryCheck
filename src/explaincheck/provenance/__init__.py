@@ -22,6 +22,7 @@ import numpy as np
 # Hashing
 # ---------------------------------------------------------------------------
 
+
 def hash_file(path: str | Path) -> str:
     """SHA-256 of a file's binary content."""
     h = hashlib.sha256()
@@ -77,6 +78,7 @@ def hash_directory(path: str | Path) -> dict[str, str]:
 # Run ID and timestamps
 # ---------------------------------------------------------------------------
 
+
 def new_run_id() -> str:
     """Generate a unique run ID: 'ec-<8-char-uuid>'."""
     return f"ec-{uuid.uuid4().hex[:8]}"
@@ -90,6 +92,7 @@ def utc_now_iso() -> str:
 # ---------------------------------------------------------------------------
 # Environment snapshot
 # ---------------------------------------------------------------------------
+
 
 def snapshot_environment() -> dict[str, str]:
     """
@@ -122,6 +125,7 @@ def snapshot_environment() -> dict[str, str]:
 # ---------------------------------------------------------------------------
 # Artifact registration
 # ---------------------------------------------------------------------------
+
 
 def register_artifacts(directory: str | Path) -> dict[str, dict[str, Any]]:
     """

@@ -21,6 +21,7 @@ from explaincheck.metrics.stability.top_k_jaccard import jaccard
 # Fidelity properties
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.property
 @given(
     x=st.lists(st.floats(min_value=-10, max_value=10), min_size=2, max_size=10).map(np.array),
@@ -62,9 +63,12 @@ def test_fidelity_baseline_replacement_gives_zero_on_const_logit(n: int, seed: i
 # Jaccard properties
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.property
 @given(
-    a=st.lists(st.floats(min_value=-10, max_value=10, allow_nan=False), min_size=2, max_size=10).map(np.array),
+    a=st.lists(
+        st.floats(min_value=-10, max_value=10, allow_nan=False), min_size=2, max_size=10
+    ).map(np.array),
     k=st.integers(min_value=1, max_value=3),
 )
 @settings(max_examples=300, deadline=2000)
@@ -77,8 +81,12 @@ def test_jaccard_reflexive(a: np.ndarray, k: int) -> None:
 
 @pytest.mark.property
 @given(
-    a=st.lists(st.floats(min_value=-10, max_value=10, allow_nan=False), min_size=2, max_size=10).map(np.array),
-    ap=st.lists(st.floats(min_value=-10, max_value=10, allow_nan=False), min_size=2, max_size=10).map(np.array),
+    a=st.lists(
+        st.floats(min_value=-10, max_value=10, allow_nan=False), min_size=2, max_size=10
+    ).map(np.array),
+    ap=st.lists(
+        st.floats(min_value=-10, max_value=10, allow_nan=False), min_size=2, max_size=10
+    ).map(np.array),
     k=st.integers(min_value=1, max_value=3),
 )
 @settings(max_examples=300, deadline=2000)
@@ -92,8 +100,12 @@ def test_jaccard_symmetric(a: np.ndarray, ap: np.ndarray, k: int) -> None:
 
 @pytest.mark.property
 @given(
-    a=st.lists(st.floats(min_value=-10, max_value=10, allow_nan=False), min_size=2, max_size=10).map(np.array),
-    ap=st.lists(st.floats(min_value=-10, max_value=10, allow_nan=False), min_size=2, max_size=10).map(np.array),
+    a=st.lists(
+        st.floats(min_value=-10, max_value=10, allow_nan=False), min_size=2, max_size=10
+    ).map(np.array),
+    ap=st.lists(
+        st.floats(min_value=-10, max_value=10, allow_nan=False), min_size=2, max_size=10
+    ).map(np.array),
     k=st.integers(min_value=1, max_value=3),
 )
 @settings(max_examples=300, deadline=2000)
@@ -129,12 +141,14 @@ def test_jaccard_scale_invariant(n: int, seed: int, scale: float) -> None:
 # Synthetic generator properties
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.property
 @given(seed=st.integers(min_value=0, max_value=9999))
 @settings(max_examples=50, deadline=10000)
 def test_generate_labels_are_binary(seed: int) -> None:
     """All generated labels must be 0 or 1."""
     from explaincheck.datasets.synthetic import generate
+
     _, y = generate(seed, n=100)
     assert set(y.tolist()).issubset({0, 1})
 
@@ -145,6 +159,7 @@ def test_generate_labels_are_binary(seed: int) -> None:
 def test_generate_no_nan_or_inf(seed: int) -> None:
     """Generated feature matrix must not contain NaN or Inf."""
     from explaincheck.datasets.synthetic import generate
+
     X, y = generate(seed, n=100)
     assert np.all(np.isfinite(X))
     assert np.all(np.isfinite(y.astype(float)))

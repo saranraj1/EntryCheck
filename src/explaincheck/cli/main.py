@@ -30,14 +30,22 @@ def cli() -> None:
 # pilot
 # ---------------------------------------------------------------------------
 
+
 @cli.group()
 def pilot() -> None:
     """Pilot experiment commands."""
 
 
 @pilot.command("synthetic")
-@click.option("--config", default="configs/pilot.yaml", type=click.Path(exists=True), help="YAML config path.")
-@click.option("--out", default="artifacts/pilot/stage2-synthetic-v1", type=click.Path(), help="Output directory.")
+@click.option(
+    "--config", default="configs/pilot.yaml", type=click.Path(exists=True), help="YAML config path."
+)
+@click.option(
+    "--out",
+    default="artifacts/pilot/stage2-synthetic-v1",
+    type=click.Path(),
+    help="Output directory.",
+)
 @click.option("--dry-run", is_flag=True, default=False, help="Validate config without running.")
 def pilot_synthetic(config: str, out: str | None, dry_run: bool) -> None:
     """
@@ -58,7 +66,9 @@ def pilot_synthetic(config: str, out: str | None, dry_run: bool) -> None:
         )
         sys.exit(1)
 
-    click.echo(f"ExplainCheck {__version__}  |  Study: {__study_id__}  |  Protocol: {__protocol_version__}")
+    click.echo(
+        f"ExplainCheck {__version__}  |  Study: {__study_id__}  |  Protocol: {__protocol_version__}"
+    )
     click.echo(f"Config hash: {cfg_hash}")
     click.echo(f"Run label:   {cfg.run_label}")
     click.echo(f"Status:      {cfg.status}")
@@ -80,8 +90,12 @@ def pilot_synthetic(config: str, out: str | None, dry_run: bool) -> None:
 
     click.echo("\n[1/4] Running manual validation fixture...")
     validation = manual_validation()
-    click.echo(f"  Fidelity AOPC@2 = {validation['fidelity_aopc_at_2_computed']:.12f}  (expected 2.25) - {validation['status'].upper()}")
-    click.echo(f"  Stability Jaccard@2 = {validation['stability_jaccard_at_2_computed']:.12f}  (expected 1.0) - {validation['status'].upper()}")
+    click.echo(
+        f"  Fidelity AOPC@2 = {validation['fidelity_aopc_at_2_computed']:.12f}  (expected 2.25) - {validation['status'].upper()}"
+    )
+    click.echo(
+        f"  Stability Jaccard@2 = {validation['stability_jaccard_at_2_computed']:.12f}  (expected 1.0) - {validation['status'].upper()}"
+    )
 
     seeds = cfg.seeds if cfg.seeds else [11, 23, 37, 41, 53, 67, 71, 83, 97, 101]
 
@@ -94,14 +108,20 @@ def pilot_synthetic(config: str, out: str | None, dry_run: bool) -> None:
         if k.startswith("_"):
             continue
         status = "PASS" if v.get("passed") else "FAIL"
-        click.echo(f"  [{status}]  {k}: got={v['got']}  ref={v['reference']}  tol=+-{v['tolerance']}")
+        click.echo(
+            f"  [{status}]  {k}: got={v['got']}  ref={v['reference']}  tol=+-{v['tolerance']}"
+        )
 
     if not reproduction.get("_all_passed"):
-        click.echo("\n[WARNING] Some reproduction checks FAILED. Inspect variance report in benchmark.json.")
+        click.echo(
+            "\n[WARNING] Some reproduction checks FAILED. Inspect variance report in benchmark.json."
+        )
 
     click.echo(f"\n[4/4] Writing outputs to {out}...")
     out_dir = Path(out) if out is not None else Path("artifacts/pilot/default")
-    run_id = write_outputs(results, models, failures, validation, timing, reproduction, out_dir, config_hash=cfg_hash)
+    run_id = write_outputs(
+        results, models, failures, validation, timing, reproduction, out_dir, config_hash=cfg_hash
+    )
 
     click.echo(f"\n[DONE] Run ID: {run_id}")
     click.echo(f"       Elapsed: {timing['elapsed_seconds']:.1f}s")
@@ -110,10 +130,10 @@ def pilot_synthetic(config: str, out: str | None, dry_run: bool) -> None:
     click.echo("\n[NOTE] Label: infrastructure-pilot. Do not interpret as confirmatory evidence.")
 
 
-
 # ---------------------------------------------------------------------------
 # smoke
 # ---------------------------------------------------------------------------
+
 
 @cli.command("smoke")
 @click.option("--config", default="configs/smoke.yaml", type=click.Path(exists=True))
@@ -129,6 +149,7 @@ def smoke(config: str) -> None:
 # ---------------------------------------------------------------------------
 # validate-artifacts
 # ---------------------------------------------------------------------------
+
 
 @cli.command("validate-artifacts")
 @click.option("--dir", "artifact_dir", required=True, type=click.Path(exists=True))
@@ -170,8 +191,11 @@ def validate_artifacts(artifact_dir: str) -> None:
 # env-snapshot
 # ---------------------------------------------------------------------------
 
+
 @cli.command("env-snapshot")
-@click.option("--out", default=None, type=click.Path(), help="Write JSON to file instead of stdout.")
+@click.option(
+    "--out", default=None, type=click.Path(), help="Write JSON to file instead of stdout."
+)
 def env_snapshot(out: str | None) -> None:
     """Print a JSON snapshot of the current environment for provenance."""
     from explaincheck.provenance import snapshot_environment

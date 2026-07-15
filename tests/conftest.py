@@ -19,6 +19,7 @@ import pytest
 # Shared numeric fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def rng() -> np.random.Generator:
     """Deterministic RNG for tests — always seed 42."""
@@ -55,6 +56,7 @@ def simple_linear_attribution() -> np.ndarray:
 # ---------------------------------------------------------------------------
 # Synthetic dataset fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def synthetic_10samples(rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:

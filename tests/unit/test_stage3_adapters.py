@@ -34,6 +34,7 @@ from explaincheck.models.xgboost_adapter import XGBoostAdapter
 # Shared fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(scope="module")
 def synth_data():
     """One synthetic seed for all Stage 3 tests."""
@@ -70,21 +71,36 @@ def sklearn_lr_fitted(synth_data):
 # ExplanationBatch contract validators
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_explanation_batch_rejects_nan():
     """Batch must be rejected if attributions contain NaN."""
     with pytest.raises(Exception):
         ExplanationBatch(
-            run_id="t", protocol_version="1.0.0", dataset="d", seed=0,
-            model_family=ModelFamily.RANDOM_FOREST, model_hash="abcd1234ef",
-            explainer=ExplainerName.TREE_SHAP, explainer_type=ExplainerType.SHAP_TREE,
-            explainer_version="0.46.0", explainer_params={},
-            output_space="probability", target_class=1,
-            sample_ids=["s0"], feature_names=["f1"],
+            run_id="t",
+            protocol_version="1.0.0",
+            dataset="d",
+            seed=0,
+            model_family=ModelFamily.RANDOM_FOREST,
+            model_hash="abcd1234ef",
+            explainer=ExplainerName.TREE_SHAP,
+            explainer_type=ExplainerType.SHAP_TREE,
+            explainer_version="0.46.0",
+            explainer_params={},
+            output_space="probability",
+            target_class=1,
+            sample_ids=["s0"],
+            feature_names=["f1"],
             attributions=[[float("nan")]],
-            base_values=[0.5], predictions=[0.6], prediction_classes=[1],
-            background_hash="abc", background_n_rows=50,
-            runtime_ms=1.0, success=True, warnings=[], failure_reason=None,
+            base_values=[0.5],
+            predictions=[0.6],
+            prediction_classes=[1],
+            background_hash="abc",
+            background_n_rows=50,
+            runtime_ms=1.0,
+            success=True,
+            warnings=[],
+            failure_reason=None,
         )
 
 
@@ -93,16 +109,30 @@ def test_explanation_batch_rejects_width_mismatch():
     """Batch rejected if attribution width != feature_names width."""
     with pytest.raises(Exception):
         ExplanationBatch(
-            run_id="t", protocol_version="1.0.0", dataset="d", seed=0,
-            model_family=ModelFamily.RANDOM_FOREST, model_hash="abcd1234ef",
-            explainer=ExplainerName.TREE_SHAP, explainer_type=ExplainerType.SHAP_TREE,
-            explainer_version="0.46.0", explainer_params={},
-            output_space="probability", target_class=1,
-            sample_ids=["s0"], feature_names=["f1", "f2"],
+            run_id="t",
+            protocol_version="1.0.0",
+            dataset="d",
+            seed=0,
+            model_family=ModelFamily.RANDOM_FOREST,
+            model_hash="abcd1234ef",
+            explainer=ExplainerName.TREE_SHAP,
+            explainer_type=ExplainerType.SHAP_TREE,
+            explainer_version="0.46.0",
+            explainer_params={},
+            output_space="probability",
+            target_class=1,
+            sample_ids=["s0"],
+            feature_names=["f1", "f2"],
             attributions=[[0.1, 0.2, 0.3]],  # 3 != 2
-            base_values=[0.5], predictions=[0.6], prediction_classes=[1],
-            background_hash="abc", background_n_rows=50,
-            runtime_ms=1.0, success=True, warnings=[], failure_reason=None,
+            base_values=[0.5],
+            predictions=[0.6],
+            prediction_classes=[1],
+            background_hash="abc",
+            background_n_rows=50,
+            runtime_ms=1.0,
+            success=True,
+            warnings=[],
+            failure_reason=None,
         )
 
 
@@ -111,23 +141,37 @@ def test_explanation_batch_rejects_empty_output_space():
     """Batch rejected if output_space is empty."""
     with pytest.raises(Exception):
         ExplanationBatch(
-            run_id="t", protocol_version="1.0.0", dataset="d", seed=0,
-            model_family=ModelFamily.RANDOM_FOREST, model_hash="abcd1234ef",
-            explainer=ExplainerName.TREE_SHAP, explainer_type=ExplainerType.SHAP_TREE,
-            explainer_version="0.46.0", explainer_params={},
+            run_id="t",
+            protocol_version="1.0.0",
+            dataset="d",
+            seed=0,
+            model_family=ModelFamily.RANDOM_FOREST,
+            model_hash="abcd1234ef",
+            explainer=ExplainerName.TREE_SHAP,
+            explainer_type=ExplainerType.SHAP_TREE,
+            explainer_version="0.46.0",
+            explainer_params={},
             output_space="",  # must not be empty
             target_class=1,
-            sample_ids=["s0"], feature_names=["f1"],
-            attributions=[[0.1]], base_values=[0.5],
-            predictions=[0.6], prediction_classes=[1],
-            background_hash="abc", background_n_rows=50,
-            runtime_ms=1.0, success=True, warnings=[], failure_reason=None,
+            sample_ids=["s0"],
+            feature_names=["f1"],
+            attributions=[[0.1]],
+            base_values=[0.5],
+            predictions=[0.6],
+            prediction_classes=[1],
+            background_hash="abc",
+            background_n_rows=50,
+            runtime_ms=1.0,
+            success=True,
+            warnings=[],
+            failure_reason=None,
         )
 
 
 # ---------------------------------------------------------------------------
 # Model adapter contract tests
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 def test_rf_fit_returns_model_record(rf_fitted):
@@ -208,6 +252,7 @@ def test_sklearn_lr_fit_deterministic(synth_data):
 # TreeSHAP contract tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_treeshap_rejects_logistic_regression(synth_data, sklearn_lr_fitted):
     """TreeSHAP must reject LR model family."""
@@ -225,10 +270,16 @@ def test_treeshap_rf_output_shape(rf_fitted, synth_data):
     exp = TreeSHAPAdapter()
     exp.fit(model, X_tr[:20], model_family=ModelFamily.RANDOM_FOREST, seed=11)
     batch = exp.explain(
-        X_te[:5], run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.RANDOM_FOREST, model_hash=rec.model_hash,
-        feature_names=FEATURE_NAMES, sample_ids=[f"s{i}" for i in range(5)],
-        protocol_version="1.0.0", model=model,
+        X_te[:5],
+        run_id="t",
+        dataset="d",
+        seed=11,
+        model_family=ModelFamily.RANDOM_FOREST,
+        model_hash=rec.model_hash,
+        feature_names=FEATURE_NAMES,
+        sample_ids=[f"s{i}" for i in range(5)],
+        protocol_version="1.0.0",
+        model=model,
     )
     assert batch.n_samples == 5
     assert batch.n_features == len(FEATURE_NAMES)
@@ -244,10 +295,16 @@ def test_treeshap_xgb_output_shape(xgb_fitted, synth_data):
     exp = TreeSHAPAdapter()
     exp.fit(model, X_tr[:20], model_family=ModelFamily.XGBOOST, seed=11)
     batch = exp.explain(
-        X_te[:5], run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.XGBOOST, model_hash=rec.model_hash,
-        feature_names=FEATURE_NAMES, sample_ids=[f"s{i}" for i in range(5)],
-        protocol_version="1.0.0", model=model,
+        X_te[:5],
+        run_id="t",
+        dataset="d",
+        seed=11,
+        model_family=ModelFamily.XGBOOST,
+        model_hash=rec.model_hash,
+        feature_names=FEATURE_NAMES,
+        sample_ids=[f"s{i}" for i in range(5)],
+        protocol_version="1.0.0",
+        model=model,
     )
     assert batch.n_samples == 5
     assert batch.n_features == len(FEATURE_NAMES)
@@ -267,10 +324,16 @@ def test_treeshap_rf_additivity(rf_fitted, synth_data):
     exp = TreeSHAPAdapter(model_output="probability")
     exp.fit(model, X_tr[:20], model_family=ModelFamily.RANDOM_FOREST, seed=11)
     batch = exp.explain(
-        X_te[:10], run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.RANDOM_FOREST, model_hash=rec.model_hash,
-        feature_names=FEATURE_NAMES, sample_ids=[f"s{i}" for i in range(10)],
-        protocol_version="1.0.0", model=model,
+        X_te[:10],
+        run_id="t",
+        dataset="d",
+        seed=11,
+        model_family=ModelFamily.RANDOM_FOREST,
+        model_hash=rec.model_hash,
+        feature_names=FEATURE_NAMES,
+        sample_ids=[f"s{i}" for i in range(10)],
+        protocol_version="1.0.0",
+        model=model,
     )
     A = batch.attribution_matrix()
     bv = np.array(batch.base_values)
@@ -296,10 +359,16 @@ def test_treeshap_xgb_additivity(xgb_fitted, synth_data):
     exp = TreeSHAPAdapter(model_output="probability")
     exp.fit(model, X_tr[:20], model_family=ModelFamily.XGBOOST, seed=11)
     batch = exp.explain(
-        X_te[:10], run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.XGBOOST, model_hash=rec.model_hash,
-        feature_names=FEATURE_NAMES, sample_ids=[f"s{i}" for i in range(10)],
-        protocol_version="1.0.0", model=model,
+        X_te[:10],
+        run_id="t",
+        dataset="d",
+        seed=11,
+        model_family=ModelFamily.XGBOOST,
+        model_hash=rec.model_hash,
+        feature_names=FEATURE_NAMES,
+        sample_ids=[f"s{i}" for i in range(10)],
+        protocol_version="1.0.0",
+        model=model,
     )
     A = batch.attribution_matrix()
     bv = np.array(batch.base_values)
@@ -318,24 +387,32 @@ def test_treeshap_rf_deterministic(rf_fitted, synth_data):
     """TreeSHAP RF determinism: identical seeded calls produce identical attributions."""
     X_tr, X_te, y_tr, _ = synth_data
     model, rec = rf_fitted
+
     def _explain():
         exp = TreeSHAPAdapter()
         exp.fit(model, X_tr[:20], model_family=ModelFamily.RANDOM_FOREST, seed=11)
         return exp.explain(
-            X_te[:5], run_id="t", dataset="d", seed=11,
-            model_family=ModelFamily.RANDOM_FOREST, model_hash=rec.model_hash,
-            feature_names=FEATURE_NAMES, sample_ids=[f"s{i}" for i in range(5)],
-            protocol_version="1.0.0", model=model,
+            X_te[:5],
+            run_id="t",
+            dataset="d",
+            seed=11,
+            model_family=ModelFamily.RANDOM_FOREST,
+            model_hash=rec.model_hash,
+            feature_names=FEATURE_NAMES,
+            sample_ids=[f"s{i}" for i in range(5)],
+            protocol_version="1.0.0",
+            model=model,
         )
+
     b1 = _explain()
     b2 = _explain()
     np.testing.assert_allclose(b1.attribution_matrix(), b2.attribution_matrix(), atol=1e-10)
 
 
-
 # ---------------------------------------------------------------------------
 # KernelSHAP contract tests
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 def test_kernelshap_output_shape(sklearn_lr_fitted, synth_data):
@@ -344,10 +421,16 @@ def test_kernelshap_output_shape(sklearn_lr_fitted, synth_data):
     exp = KernelSHAPAdapter(background_n=20, nsamples=32)
     exp.fit(model.predict_proba, X_tr, seed=11)
     batch = exp.explain(
-        X_te[:3], run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash=rec.model_hash,
-        feature_names=FEATURE_NAMES, sample_ids=[f"s{i}" for i in range(3)],
-        protocol_version="1.0.0", model=model,
+        X_te[:3],
+        run_id="t",
+        dataset="d",
+        seed=11,
+        model_family=ModelFamily.LOGISTIC_REGRESSION,
+        model_hash=rec.model_hash,
+        feature_names=FEATURE_NAMES,
+        sample_ids=[f"s{i}" for i in range(3)],
+        protocol_version="1.0.0",
+        model=model,
     )
     assert batch.n_samples == 3
     assert batch.n_features == len(FEATURE_NAMES)
@@ -359,6 +442,7 @@ def test_kernelshap_output_shape(sklearn_lr_fitted, synth_data):
 def test_kernelshap_rejects_test_leakage(synth_data):
     """KernelSHAP must reject if background_n > len(X_train)."""
     from explaincheck.explainers.kernel_shap import _sample_background
+
     X_tr = np.zeros((10, 3))
     with pytest.raises(ValueError, match="test data"):
         _sample_background(X_tr, n=20, seed=0)
@@ -393,10 +477,16 @@ def test_kernelshap_agreement_with_exact_linear(synth_data):
     exact_exp = ExactLinearExplainer()
     exact_exp.fit(lr_custom, X_tr, FEATURE_NAMES, seed=11)
     exact_records = [
-        r for r in exact_exp.explain(
-            X_te[:5], run_id="t", dataset="d", seed=11,
-            model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash=rec.model_hash,
-            sample_ids=[f"s{i}" for i in range(5)], protocol_version="1.0.0",
+        r
+        for r in exact_exp.explain(
+            X_te[:5],
+            run_id="t",
+            dataset="d",
+            seed=11,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash=rec.model_hash,
+            sample_ids=[f"s{i}" for i in range(5)],
+            protocol_version="1.0.0",
         )
         if isinstance(r, AttributionRecord)
     ]
@@ -406,10 +496,16 @@ def test_kernelshap_agreement_with_exact_linear(synth_data):
     kernel_exp = KernelSHAPAdapter(background_n=30, nsamples=48)
     kernel_exp.fit(sklearn_lr.predict_proba, X_tr, seed=11)
     batch = kernel_exp.explain(
-        X_te[:5], run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash=sk_rec.model_hash,
-        feature_names=FEATURE_NAMES, sample_ids=[f"s{i}" for i in range(5)],
-        protocol_version="1.0.0", model=sklearn_lr,
+        X_te[:5],
+        run_id="t",
+        dataset="d",
+        seed=11,
+        model_family=ModelFamily.LOGISTIC_REGRESSION,
+        model_hash=sk_rec.model_hash,
+        feature_names=FEATURE_NAMES,
+        sample_ids=[f"s{i}" for i in range(5)],
+        protocol_version="1.0.0",
+        model=sklearn_lr,
     )
 
     # Check sign agreement for the two clearly dominant features (x1=1.5, x2=-1.2)
@@ -520,7 +616,10 @@ def test_lime_analytic_reference(synth_data):
     cossims, sign_agrees = [], []
     for i in range(n_test):
         exp = explainer.explain_instance(
-            X_te_an[i], f_raw, num_features=p, num_samples=512,
+            X_te_an[i],
+            f_raw,
+            num_features=p,
+            num_samples=512,
         )
         lime_vec = np.zeros(p)
         for feat_name, coef in exp.as_list():
@@ -555,6 +654,7 @@ def test_lime_analytic_reference(synth_data):
 # LIME contract tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_lime_output_shape(sklearn_lr_fitted, synth_data):
     X_tr, X_te, y_tr, _ = synth_data
@@ -562,10 +662,16 @@ def test_lime_output_shape(sklearn_lr_fitted, synth_data):
     exp = LIMEAdapter(num_samples=64)
     exp.fit(X_tr, FEATURE_NAMES, seed=11)
     batch = exp.explain(
-        X_te[:3], run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash=rec.model_hash,
-        feature_names=FEATURE_NAMES, sample_ids=[f"s{i}" for i in range(3)],
-        protocol_version="1.0.0", model=model,
+        X_te[:3],
+        run_id="t",
+        dataset="d",
+        seed=11,
+        model_family=ModelFamily.LOGISTIC_REGRESSION,
+        model_hash=rec.model_hash,
+        feature_names=FEATURE_NAMES,
+        sample_ids=[f"s{i}" for i in range(3)],
+        protocol_version="1.0.0",
+        model=model,
     )
     assert batch.n_samples == 3
     assert batch.n_features == len(FEATURE_NAMES)
@@ -580,10 +686,16 @@ def test_lime_dense_output_no_nan(sklearn_lr_fitted, synth_data):
     exp = LIMEAdapter(num_samples=64)
     exp.fit(X_tr, FEATURE_NAMES, seed=11)
     batch = exp.explain(
-        X_te[:5], run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash=rec.model_hash,
-        feature_names=FEATURE_NAMES, sample_ids=[f"s{i}" for i in range(5)],
-        protocol_version="1.0.0", model=model,
+        X_te[:5],
+        run_id="t",
+        dataset="d",
+        seed=11,
+        model_family=ModelFamily.LOGISTIC_REGRESSION,
+        model_hash=rec.model_hash,
+        feature_names=FEATURE_NAMES,
+        sample_ids=[f"s{i}" for i in range(5)],
+        protocol_version="1.0.0",
+        model=model,
     )
     A = batch.attribution_matrix()
     assert np.all(np.isfinite(A)), "LIME attribution contains NaN or Inf."
@@ -597,10 +709,16 @@ def test_lime_dense_width_matches_features(sklearn_lr_fitted, synth_data):
     exp = LIMEAdapter(num_samples=64)
     exp.fit(X_tr, FEATURE_NAMES, seed=11)
     batch = exp.explain(
-        X_te[:3], run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash=rec.model_hash,
-        feature_names=FEATURE_NAMES, sample_ids=[f"s{i}" for i in range(3)],
-        protocol_version="1.0.0", model=model,
+        X_te[:3],
+        run_id="t",
+        dataset="d",
+        seed=11,
+        model_family=ModelFamily.LOGISTIC_REGRESSION,
+        model_hash=rec.model_hash,
+        feature_names=FEATURE_NAMES,
+        sample_ids=[f"s{i}" for i in range(3)],
+        protocol_version="1.0.0",
+        model=model,
     )
     assert batch.attribution_matrix().shape == (3, len(FEATURE_NAMES))
 
@@ -614,10 +732,16 @@ def test_lime_feature_schema_mismatch_raises(sklearn_lr_fitted, synth_data):
     exp.fit(X_tr, FEATURE_NAMES, seed=11)
     with pytest.raises(ValueError, match="feature_names mismatch"):
         exp.explain(
-            X_te[:2], run_id="t", dataset="d", seed=11,
-            model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash=rec.model_hash,
+            X_te[:2],
+            run_id="t",
+            dataset="d",
+            seed=11,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash=rec.model_hash,
             feature_names=["a", "b", "c", "d", "e", "f", "g", "h"],
-            sample_ids=["s0", "s1"], protocol_version="1.0.0", model=model,
+            sample_ids=["s0", "s1"],
+            protocol_version="1.0.0",
+            model=model,
         )
 
 
@@ -640,10 +764,16 @@ def test_lime_directional_dominant_feature(sklearn_lr_fitted, synth_data):
         pytest.skip("Not enough samples with x1 > 1.5 in test split")
 
     batch = exp.explain(
-        Xpos, run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash=rec.model_hash,
-        feature_names=FEATURE_NAMES, sample_ids=[f"s{i}" for i in range(len(Xpos))],
-        protocol_version="1.0.0", model=model,
+        Xpos,
+        run_id="t",
+        dataset="d",
+        seed=11,
+        model_family=ModelFamily.LOGISTIC_REGRESSION,
+        model_hash=rec.model_hash,
+        feature_names=FEATURE_NAMES,
+        sample_ids=[f"s{i}" for i in range(len(Xpos))],
+        protocol_version="1.0.0",
+        model=model,
     )
     A = batch.attribution_matrix()
     # Feature 0 (x1) should be positive for most samples with x1 > 1.5
@@ -657,6 +787,7 @@ def test_lime_directional_dominant_feature(sklearn_lr_fitted, synth_data):
 # ---------------------------------------------------------------------------
 # Scientific sanity: negative control ordering
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 def test_negative_control_still_lower_after_stage3(synth_data):
@@ -682,26 +813,49 @@ def test_negative_control_still_lower_after_stage3(synth_data):
     sample_ids = [f"s{i}" for i in range(30)]
 
     def _fid(records):
-        return np.mean([
-            deletion_fidelity_aopc_single(Xe[i], np.array(r.attribution), lr.weights, lr.bias, baseline, 3)
-            for i, r in enumerate(r for r in records if isinstance(r, AttributionRecord))
-        ])
+        return np.mean(
+            [
+                deletion_fidelity_aopc_single(
+                    Xe[i], np.array(r.attribution), lr.weights, lr.bias, baseline, 3
+                )
+                for i, r in enumerate(r for r in records if isinstance(r, AttributionRecord))
+            ]
+        )
 
-    exact_fid = _fid(exact_exp.explain(Xe, run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash="h",
-        sample_ids=sample_ids, protocol_version="1.0.0"))
-    neg_fid = _fid(neg_exp.explain(Xe, run_id="t", dataset="d", seed=11,
-        model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash="h",
-        sample_ids=sample_ids, protocol_version="1.0.0"))
-
-    assert exact_fid > neg_fid, (
-        f"Exact fidelity ({exact_fid:.4f}) must exceed negative control ({neg_fid:.4f})."
+    exact_fid = _fid(
+        exact_exp.explain(
+            Xe,
+            run_id="t",
+            dataset="d",
+            seed=11,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash="h",
+            sample_ids=sample_ids,
+            protocol_version="1.0.0",
+        )
     )
+    neg_fid = _fid(
+        neg_exp.explain(
+            Xe,
+            run_id="t",
+            dataset="d",
+            seed=11,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash="h",
+            sample_ids=sample_ids,
+            protocol_version="1.0.0",
+        )
+    )
+
+    assert (
+        exact_fid > neg_fid
+    ), f"Exact fidelity ({exact_fid:.4f}) must exceed negative control ({neg_fid:.4f})."
 
 
 # ---------------------------------------------------------------------------
 # Failure modes (structured records)
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 def test_rf_requires_fit():
@@ -721,27 +875,51 @@ def test_xgb_requires_fit():
 def test_treeshap_requires_fit():
     exp = TreeSHAPAdapter()
     with pytest.raises(RuntimeError):
-        exp.explain(np.zeros((1, 8)), run_id="t", dataset="d", seed=0,
-                    model_family=ModelFamily.RANDOM_FOREST, model_hash="h",
-                    feature_names=["f"]*8, sample_ids=["s0"],
-                    protocol_version="1.0.0", model=None)
+        exp.explain(
+            np.zeros((1, 8)),
+            run_id="t",
+            dataset="d",
+            seed=0,
+            model_family=ModelFamily.RANDOM_FOREST,
+            model_hash="h",
+            feature_names=["f"] * 8,
+            sample_ids=["s0"],
+            protocol_version="1.0.0",
+            model=None,
+        )
 
 
 @pytest.mark.unit
 def test_kernelshap_requires_fit():
     exp = KernelSHAPAdapter()
     with pytest.raises(RuntimeError):
-        exp.explain(np.zeros((1, 8)), run_id="t", dataset="d", seed=0,
-                    model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash="h",
-                    feature_names=["f"]*8, sample_ids=["s0"],
-                    protocol_version="1.0.0", model=None)
+        exp.explain(
+            np.zeros((1, 8)),
+            run_id="t",
+            dataset="d",
+            seed=0,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash="h",
+            feature_names=["f"] * 8,
+            sample_ids=["s0"],
+            protocol_version="1.0.0",
+            model=None,
+        )
 
 
 @pytest.mark.unit
 def test_lime_requires_fit():
     exp = LIMEAdapter()
     with pytest.raises(RuntimeError):
-        exp.explain(np.zeros((1, 8)), run_id="t", dataset="d", seed=0,
-                    model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash="h",
-                    feature_names=FEATURE_NAMES, sample_ids=["s0"],
-                    protocol_version="1.0.0", model=None)
+        exp.explain(
+            np.zeros((1, 8)),
+            run_id="t",
+            dataset="d",
+            seed=0,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash="h",
+            feature_names=FEATURE_NAMES,
+            sample_ids=["s0"],
+            protocol_version="1.0.0",
+            model=None,
+        )

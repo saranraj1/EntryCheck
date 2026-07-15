@@ -31,7 +31,7 @@ class BaseMetric(ABC):
 
     family: MetricFamily
     name: str
-    direction: str            # "higher_is_better" or "lower_is_better"
+    direction: str  # "higher_is_better" or "lower_is_better"
     value_range: tuple[float | None, float | None] = (None, None)
     requires_prediction_preservation: bool = False
     aggregation_method: str = "mean"
@@ -72,9 +72,7 @@ class BaseMetric(ABC):
         Failures are returned as FailureRecord — never silently discarded.
         """
 
-    def validate_attributions(
-        self, attributions: list[AttributionRecord]
-    ) -> None:
+    def validate_attributions(self, attributions: list[AttributionRecord]) -> None:
         """
         Raise ValueError if attributions are invalid for this metric.
         Called at the start of compute() by default.

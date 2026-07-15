@@ -67,6 +67,7 @@ class RandomForestAdapter(BaseModel):
         train_h.update(y.tobytes())
 
         import sklearn
+
         return ModelRecord(
             family=self.family,
             implementation="sklearn.ensemble.RandomForestClassifier",
@@ -101,6 +102,7 @@ class RandomForestAdapter(BaseModel):
 
     def library_version(self) -> str:
         import sklearn
+
         return sklearn.__version__
 
     @property

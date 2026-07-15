@@ -36,6 +36,7 @@ _SCHEMA_VERSION = "1.0.0"
 # Dataset
 # ---------------------------------------------------------------------------
 
+
 class DatasetRecord(BaseModel):
     """Provenance record for one dataset snapshot."""
 
@@ -76,6 +77,7 @@ class SplitRecord(BaseModel):
 # Model
 # ---------------------------------------------------------------------------
 
+
 class ModelRecord(BaseModel):
     """Provenance record for one fitted model."""
 
@@ -83,13 +85,13 @@ class ModelRecord(BaseModel):
 
     schema_version: str = _SCHEMA_VERSION
     family: ModelFamily
-    implementation: str      # fully-qualified class name
-    version: str             # library version string
+    implementation: str  # fully-qualified class name
+    version: str  # library version string
     hyperparameters: dict[str, Any]
     dataset: str
     seed: int
     fit_ms: float
-    model_hash: str          # hash of serialised model parameters
+    model_hash: str  # hash of serialised model parameters
     train_sha256: str
     notes: str | None = None  # structured metadata (e.g. convergence status)
 
@@ -97,6 +99,7 @@ class ModelRecord(BaseModel):
 # ---------------------------------------------------------------------------
 # Attribution
 # ---------------------------------------------------------------------------
+
 
 class AttributionRecord(BaseModel):
     """One local attribution vector for one sample."""
@@ -127,6 +130,7 @@ class AttributionRecord(BaseModel):
     @classmethod
     def attributions_finite(cls, v: list[float]) -> list[float]:
         import math
+
         if any(not math.isfinite(x) for x in v):
             raise ValueError("Attribution vector contains NaN or Inf.")
         return v
@@ -135,6 +139,7 @@ class AttributionRecord(BaseModel):
 # ---------------------------------------------------------------------------
 # Metric result
 # ---------------------------------------------------------------------------
+
 
 class MetricResult(BaseModel):
     """One metric estimate for one (dataset, model, explainer, seed, stressor) cell."""
@@ -158,20 +163,22 @@ class MetricResult(BaseModel):
 
     # Metric identity
     metric_family: MetricFamily
-    metric_name: str           # e.g. "deletion_fidelity_aopc"
-    metric_variant: str | None = None   # e.g. "top_k_jaccard" for stability
-    metric_k: int | None = None        # k parameter for top-k metrics
+    metric_name: str  # e.g. "deletion_fidelity_aopc"
+    metric_variant: str | None = None  # e.g. "top_k_jaccard" for stability
+    metric_k: int | None = None  # k parameter for top-k metrics
 
     # Stressor dimensions
     stressor: str | None = None
-    stress_level: str | None = None    # e.g. "0.3" for correlation rho
+    stress_level: str | None = None  # e.g. "0.3" for correlation rho
 
     # Subgroup dimension
     subgroup: str | None = None
     subgroup_value: str | None = None
 
     # Prediction preservation
-    prediction_preservation_status: PredictionPreservationStatus = PredictionPreservationStatus.NOT_APPLICABLE
+    prediction_preservation_status: PredictionPreservationStatus = (
+        PredictionPreservationStatus.NOT_APPLICABLE
+    )
     n_perturbations_total: int | None = None
     n_perturbations_rejected: int | None = None
 
@@ -180,7 +187,7 @@ class MetricResult(BaseModel):
     ci_low: float | None = None
     ci_high: float | None = None
     ci_level: float | None = None
-    n: int | None = None              # number of samples contributing
+    n: int | None = None  # number of samples contributing
 
     # Runtime
     runtime_ms: float
@@ -194,6 +201,7 @@ class MetricResult(BaseModel):
 # Failure record
 # ---------------------------------------------------------------------------
 
+
 class FailureRecord(BaseModel):
     """One pipeline failure, preserved for the failures.csv output."""
 
@@ -201,7 +209,7 @@ class FailureRecord(BaseModel):
 
     schema_version: str = _SCHEMA_VERSION
     run_id: str
-    timestamp: str          # ISO-8601 datetime string
+    timestamp: str  # ISO-8601 datetime string
     dataset: str
     model_family: ModelFamily | None = None
     explainer: ExplainerName | None = None
@@ -217,6 +225,7 @@ class FailureRecord(BaseModel):
 # ---------------------------------------------------------------------------
 # Run manifest
 # ---------------------------------------------------------------------------
+
 
 class ArtifactEntry(BaseModel):
     """SHA-256 hash and byte size for one output artifact."""
@@ -255,10 +264,10 @@ class RunManifest(BaseModel):
     study_id: str
     protocol_version: str
     run_label: RunLabel
-    status: str                    # "pilot-not-confirmatory", "confirmatory", etc.
-    config_hash: str               # SHA-256 of the YAML config used
-    code_hash: str                 # git commit SHA or source hash
-    created_at: str                # ISO-8601 datetime
+    status: str  # "pilot-not-confirmatory", "confirmatory", etc.
+    config_hash: str  # SHA-256 of the YAML config used
+    code_hash: str  # git commit SHA or source hash
+    created_at: str  # ISO-8601 datetime
     environment: EnvironmentRecord
     seeds: list[int]
     datasets: list[str]
@@ -270,4 +279,4 @@ class RunManifest(BaseModel):
     n_excluded: int
     elapsed_seconds: float
     limitations: list[str]
-    osf_registration_url: str | None = None   # None until external registration
+    osf_registration_url: str | None = None  # None until external registration

@@ -33,6 +33,7 @@ from explaincheck.models.logistic_regression import LogisticRegressionAdapter
 # Synthetic generator
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_generate_shape() -> None:
     X, y = generate(11)
@@ -100,6 +101,7 @@ def test_split_record_hashes_differ() -> None:
 # Logistic Regression
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_lr_fit_returns_model_record() -> None:
     X, y = generate(11)
@@ -152,9 +154,11 @@ def test_lr_recovers_coefficient_direction() -> None:
 # Exact-linear explainer
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
-def test_exact_linear_hand_fixture(simple_linear_weights, simple_linear_sample,
-                                   simple_linear_baseline, simple_linear_attribution) -> None:
+def test_exact_linear_hand_fixture(
+    simple_linear_weights, simple_linear_sample, simple_linear_baseline, simple_linear_attribution
+) -> None:
     """Exact-linear attributions must match the Phase 0 hand fixture exactly."""
     X = simple_linear_sample.reshape(1, -1)
     baseline = simple_linear_baseline
@@ -162,7 +166,9 @@ def test_exact_linear_hand_fixture(simple_linear_weights, simple_linear_sample,
 
     class FakeLR:
         weights = w
-        def predict_proba(self, X): return np.array([[0.4, 0.6]])
+
+        def predict_proba(self, X):
+            return np.array([[0.4, 0.6]])
 
     exp = ExactLinearExplainer()
     exp._weights = w
@@ -171,13 +177,20 @@ def test_exact_linear_hand_fixture(simple_linear_weights, simple_linear_sample,
     exp._background_hash = "test"
 
     records = exp.explain(
-        X, run_id="test", dataset="test", seed=11,
+        X,
+        run_id="test",
+        dataset="test",
+        seed=11,
         model_family=ModelFamily.LOGISTIC_REGRESSION,
-        model_hash="testhash", sample_ids=["s0"], protocol_version="1.0.0",
+        model_hash="testhash",
+        sample_ids=["s0"],
+        protocol_version="1.0.0",
     )
     assert len(records) == 1
     assert isinstance(records[0], AttributionRecord)
-    np.testing.assert_allclose(records[0].attribution, simple_linear_attribution.tolist(), atol=1e-12)
+    np.testing.assert_allclose(
+        records[0].attribution, simple_linear_attribution.tolist(), atol=1e-12
+    )
 
 
 @pytest.mark.unit
@@ -204,27 +217,48 @@ def test_negative_control_same_magnitude() -> None:
     neg.fit(lr, X_tr, FEATURE_NAMES, seed=11)
 
     sample_ids = [f"s{i}" for i in range(10)]
-    exact_recs = [r for r in exact.explain(X_te[:10], run_id="t", dataset="d", seed=11,
-                                             model_family=ModelFamily.LOGISTIC_REGRESSION,
-                                             model_hash="h", sample_ids=sample_ids,
-                                             protocol_version="1.0.0")
-                   if isinstance(r, AttributionRecord)]
-    neg_recs = [r for r in neg.explain(X_te[:10], run_id="t", dataset="d", seed=11,
-                                         model_family=ModelFamily.LOGISTIC_REGRESSION,
-                                         model_hash="h", sample_ids=sample_ids,
-                                         protocol_version="1.0.0")
-                 if isinstance(r, AttributionRecord)]
+    exact_recs = [
+        r
+        for r in exact.explain(
+            X_te[:10],
+            run_id="t",
+            dataset="d",
+            seed=11,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash="h",
+            sample_ids=sample_ids,
+            protocol_version="1.0.0",
+        )
+        if isinstance(r, AttributionRecord)
+    ]
+    neg_recs = [
+        r
+        for r in neg.explain(
+            X_te[:10],
+            run_id="t",
+            dataset="d",
+            seed=11,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash="h",
+            sample_ids=sample_ids,
+            protocol_version="1.0.0",
+        )
+        if isinstance(r, AttributionRecord)
+    ]
 
     for e, n in zip(exact_recs, neg_recs, strict=False):
         np.testing.assert_allclose(
-            sorted(e.attribution), sorted(n.attribution), atol=1e-12,
-            err_msg="Negative control must be a permutation — sorted attributions must match."
+            sorted(e.attribution),
+            sorted(n.attribution),
+            atol=1e-12,
+            err_msg="Negative control must be a permutation — sorted attributions must match.",
         )
 
 
 # ---------------------------------------------------------------------------
 # Deletion fidelity AOPC
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 def test_fidelity_hand_fixture() -> None:
@@ -268,6 +302,7 @@ def test_fidelity_nonnegative() -> None:
 # Stability Top-k Jaccard
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_stability_hand_fixture() -> None:
     """DR-002 hand fixture: Jaccard@2 must equal 1.0 exactly."""
@@ -290,6 +325,7 @@ def test_stability_disjoint_topk() -> None:
 def test_stability_negative_control_lower_than_exact() -> None:
     """Negative control must have strictly lower stability than exact (on average, 10 seeds)."""
     from explaincheck.pilot.runner import FROZEN_SEEDS, KMAX, SIGMA
+
     results_exact, results_neg = [], []
     for seed in FROZEN_SEEDS[:3]:
         X, y = generate(seed)
@@ -303,7 +339,8 @@ def test_stability_negative_control_lower_than_exact() -> None:
         Xep = Xe + rng_p.normal(0, SIGMA, size=Xe.shape)
 
         def _sigmoid(z):
-            z = np.clip(z, -35, 35); return 1.0 / (1.0 + np.exp(-z))
+            z = np.clip(z, -35, 35)
+            return 1.0 / (1.0 + np.exp(-z))
 
         pred_orig = (_sigmoid(Xe @ lr.weights + lr.bias) >= 0.5).astype(int)
         pred_pert = (_sigmoid(Xep @ lr.weights + lr.bias) >= 0.5).astype(int)
@@ -326,27 +363,39 @@ def test_stability_negative_control_lower_than_exact() -> None:
 
     exact_mean = np.mean(results_exact)
     neg_mean = np.mean(results_neg)
-    assert exact_mean > neg_mean, (
-        f"Exact stability ({exact_mean:.3f}) must exceed negative control ({neg_mean:.3f})."
-    )
+    assert (
+        exact_mean > neg_mean
+    ), f"Exact stability ({exact_mean:.3f}) must exceed negative control ({neg_mean:.3f})."
 
 
 # ---------------------------------------------------------------------------
 # Invalid input guards
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_fidelity_raises_on_nan_attribution() -> None:
     from explaincheck.contracts import AttributionRecord, DataSplit
+
     with pytest.raises(Exception):
         AttributionRecord(
-            run_id="t", protocol_version="1.0.0", sample_id="s0",
-            dataset="d", seed=11, split=DataSplit.TEST,
-            model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash="h",
-            explainer=ExplainerName.EXACT_LINEAR, explainer_type=ExplainerType.CONTROL_REFERENCE,
-            explainer_version="1.0.0", feature_names=["f1"],
-            attribution=[float("nan")], prediction_class=0,
-            prediction_probability=0.5, runtime_ms=1.0, success=True,
+            run_id="t",
+            protocol_version="1.0.0",
+            sample_id="s0",
+            dataset="d",
+            seed=11,
+            split=DataSplit.TEST,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash="h",
+            explainer=ExplainerName.EXACT_LINEAR,
+            explainer_type=ExplainerType.CONTROL_REFERENCE,
+            explainer_version="1.0.0",
+            feature_names=["f1"],
+            attribution=[float("nan")],
+            prediction_class=0,
+            prediction_probability=0.5,
+            runtime_ms=1.0,
+            success=True,
         )
 
 
@@ -354,9 +403,16 @@ def test_fidelity_raises_on_nan_attribution() -> None:
 def test_explainer_requires_fit() -> None:
     exp = ExactLinearExplainer()
     with pytest.raises(RuntimeError):
-        exp.explain(np.zeros((1, 3)), run_id="t", dataset="d", seed=11,
-                    model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash="h",
-                    sample_ids=["s0"], protocol_version="1.0.0")
+        exp.explain(
+            np.zeros((1, 3)),
+            run_id="t",
+            dataset="d",
+            seed=11,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash="h",
+            sample_ids=["s0"],
+            protocol_version="1.0.0",
+        )
 
 
 @pytest.mark.unit

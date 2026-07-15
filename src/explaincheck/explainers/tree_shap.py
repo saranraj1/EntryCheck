@@ -120,15 +120,27 @@ class TreeSHAPAdapter:
         if isinstance(shap_values, list):
             # Old SHAP convention: list [class0_arr, class1_arr]
             sv = np.array(shap_values[1])
-            bv = float(base_vals_raw[1]) if hasattr(base_vals_raw, "__len__") else float(base_vals_raw)
+            bv = (
+                float(base_vals_raw[1])
+                if hasattr(base_vals_raw, "__len__")
+                else float(base_vals_raw)
+            )
         elif shap_values.ndim == 3 and shap_values.shape[2] == 2:
             # RF: (n_samples, n_features, n_classes) — take class 1 slice
             sv = shap_values[:, :, 1]
-            bv = float(base_vals_raw[1]) if hasattr(base_vals_raw, "__len__") and len(base_vals_raw) == 2 else float(base_vals_raw)
+            bv = (
+                float(base_vals_raw[1])
+                if hasattr(base_vals_raw, "__len__") and len(base_vals_raw) == 2
+                else float(base_vals_raw)
+            )
         elif shap_values.ndim == 2:
             # XGB: (n_samples, n_features) with scalar expected_value for positive class
             sv = shap_values
-            bv = float(base_vals_raw) if not hasattr(base_vals_raw, "__len__") else float(np.asarray(base_vals_raw).flat[0])
+            bv = (
+                float(base_vals_raw)
+                if not hasattr(base_vals_raw, "__len__")
+                else float(np.asarray(base_vals_raw).flat[0])
+            )
         else:
             raise ValueError(
                 f"Unexpected SHAP values shape {shap_values.shape}. "
@@ -141,7 +153,6 @@ class TreeSHAPAdapter:
         rt = (time.perf_counter() - t0) * 1000
 
         base_values_list = [bv] * len(sample_ids)
-
 
         return ExplanationBatch(
             run_id=run_id,

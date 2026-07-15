@@ -23,27 +23,24 @@ import numpy as np
 import pytest
 
 from explaincheck.contracts import (
-    DataSplit,
-    ExplainerName,
-    ExplainerType,
     MetricFamily,
     ModelFamily,
     PredictionPreservationStatus,
     RunStatus,
 )
-from explaincheck.contracts.models import AttributionRecord, MetricResult, FailureRecord
+from explaincheck.contracts.models import MetricResult
 from explaincheck.datasets.synthetic import FEATURE_NAMES, generate, split
 from explaincheck.explainers.exact_linear import ExactLinearExplainer
+from explaincheck.metrics.runtime.runtime_metric import RuntimeMetric, timer_and_memory
 from explaincheck.metrics.sparsity.k90_sparsity import K90Sparsity, k90_sparsity
 from explaincheck.metrics.stability.cosine_stability import CosineStability, cosine_similarity_pair
 from explaincheck.metrics.stability.spearman_stability import SpearmanStability, spearman_pair
-from explaincheck.metrics.runtime.runtime_metric import RuntimeMetric, timer_and_memory
 from explaincheck.models.logistic_regression import LogisticRegressionAdapter
-
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(scope="module")
 def synth_data():
@@ -68,17 +65,24 @@ def exact_records(lr_fitted, synth_data):
     exp = ExactLinearExplainer()
     exp.fit(model, X_tr, FEATURE_NAMES, seed=11)
     records = exp.explain(
-        X_te[:20], run_id="t4", dataset="synth-linear", seed=11,
-        model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash=rec.model_hash,
-        sample_ids=[f"s{i}" for i in range(20)], protocol_version="1.0.0",
+        X_te[:20],
+        run_id="t4",
+        dataset="synth-linear",
+        seed=11,
+        model_family=ModelFamily.LOGISTIC_REGRESSION,
+        model_hash=rec.model_hash,
+        sample_ids=[f"s{i}" for i in range(20)],
+        protocol_version="1.0.0",
     )
     from explaincheck.contracts import AttributionRecord as AR
+
     return [r for r in records if isinstance(r, AR)]
 
 
 # ---------------------------------------------------------------------------
 # k90_sparsity function: hand fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 def test_k90_single_dominant():
@@ -137,6 +141,7 @@ def test_k90_single_element():
 # cosine_similarity_pair: hand fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_cosine_identical():
     a = np.array([1.0, 2.0, 3.0])
@@ -194,6 +199,7 @@ def test_cosine_known_value():
 # ---------------------------------------------------------------------------
 # spearman_pair: hand fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 def test_spearman_identical():
@@ -306,6 +312,7 @@ def test_k90_compute_not_applicable_preservation(exact_records):
 # CosineStability.compute(): schema and contract
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_cosine_stability_compute_count(lr_fitted, synth_data, exact_records):
     model, rec = lr_fitted
@@ -370,6 +377,7 @@ def test_cosine_stability_preserved_samples_finite(lr_fitted, synth_data, exact_
 # SpearmanStability.compute(): schema and contract
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_spearman_stability_compute_count(lr_fitted, synth_data, exact_records):
     model, rec = lr_fitted
@@ -411,6 +419,7 @@ def test_spearman_stability_compute_schema(lr_fitted, synth_data, exact_records)
 # RuntimeMetric.compute()
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_runtime_metric_compute_count(exact_records):
     metric = RuntimeMetric()
@@ -432,9 +441,11 @@ def test_runtime_metric_values_positive(exact_records):
 # timer_and_memory context manager
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_timer_and_memory_captures_time():
     import time
+
     with timer_and_memory() as stats:
         time.sleep(0.01)
     assert stats["wall_ms"] >= 10.0  # at least 10ms
@@ -452,6 +463,7 @@ def test_timer_and_memory_captures_memory():
 # K90Sparsity property: linear model has low k90
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_k90_linear_model_is_sparse(lr_fitted, synth_data, exact_records):
     """
@@ -461,10 +473,12 @@ def test_k90_linear_model_is_sparse(lr_fitted, synth_data, exact_records):
     """
     metric = K90Sparsity()
     results = metric.compute(exact_records, **_COMPUTE_KWARGS)
-    k_values = [r.estimate for r in results if isinstance(r, MetricResult) and r.status == RunStatus.SUCCESS]
+    k_values = [
+        r.estimate for r in results if isinstance(r, MetricResult) and r.status == RunStatus.SUCCESS
+    ]
     assert len(k_values) > 0
     # The mean k90 over samples should be < n_features (8) for a sparse linear model
     mean_k = sum(k_values) / len(k_values)
-    assert mean_k < len(FEATURE_NAMES), (
-        f"Mean k90={mean_k:.2f} should be < {len(FEATURE_NAMES)} for sparse linear model."
-    )
+    assert mean_k < len(
+        FEATURE_NAMES
+    ), f"Mean k90={mean_k:.2f} should be < {len(FEATURE_NAMES)} for sparse linear model."

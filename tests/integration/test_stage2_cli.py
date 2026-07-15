@@ -51,6 +51,7 @@ def test_cli_pilot_synthetic_dry_run(tmp_path: Path) -> None:
     """Dry run must succeed without running any computation."""
     runner = CliRunner()
     import shutil
+
     # Copy the pilot config to a temp location to avoid path issues
     src = Path("configs/pilot.yaml")
     dst = tmp_path / "pilot.yaml"
@@ -109,9 +110,15 @@ def test_cli_pilot_full_run(tmp_path: Path) -> None:
 
     # Verify required artifacts exist
     required = [
-        "run-manifest.json", "environment.json", "benchmark.json",
-        "tidy-results.csv", "model-performance.csv", "failures.csv",
-        "manual-metric-validation.json", "model-card.md", "SHA256SUMS.txt",
+        "run-manifest.json",
+        "environment.json",
+        "benchmark.json",
+        "tidy-results.csv",
+        "model-performance.csv",
+        "failures.csv",
+        "manual-metric-validation.json",
+        "model-card.md",
+        "SHA256SUMS.txt",
     ]
     for f in required:
         assert (out_dir / f).exists(), f"Missing: {f}"

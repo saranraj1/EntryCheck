@@ -17,6 +17,7 @@ import pytest
 # Hand fixture validation (must pass EXACTLY — no tolerance)
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.golden
 def test_hand_fixture_fidelity_aopc2_exact() -> None:
     """DR-002 requirement: Fidelity AOPC@2 = 2.25 exactly."""
@@ -61,6 +62,7 @@ def test_manual_validation_runner() -> None:
 # Phase 0 regression tests — must reproduce within declared tolerance
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.golden
 @pytest.mark.slow
 def test_phase0_reproduction_all_seeds() -> None:
@@ -75,7 +77,9 @@ def test_phase0_reproduction_all_seeds() -> None:
     results, models, failures, timing = run_pilot()
     checks = check_reproduction(results, models)
 
-    failures_found = {k: v for k, v in checks.items() if isinstance(v, dict) and not v.get("passed")}
+    failures_found = {
+        k: v for k, v in checks.items() if isinstance(v, dict) and not v.get("passed")
+    }
 
     report_lines = ["\nPhase 0 Reproduction Report:"]
     for k, v in checks.items():
@@ -90,6 +94,7 @@ def test_phase0_reproduction_all_seeds() -> None:
 
     if failures_found:
         import warnings
+
         warnings.warn("\n".join(report_lines))
         assert False, (
             f"Phase 0 reproduction FAILED for: {list(failures_found.keys())}\n"
@@ -103,6 +108,7 @@ def test_phase0_reproduction_all_seeds() -> None:
 # ---------------------------------------------------------------------------
 # Artifact schema test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.golden
 @pytest.mark.slow
@@ -122,9 +128,15 @@ def test_artifacts_schema_valid(tmp_path) -> None:
     run_id = write_outputs(results, models, failures, validation, timing, reproduction, out_dir)
 
     required_files = [
-        "run-manifest.json", "environment.json", "benchmark.json",
-        "raw-results.parquet", "tidy-results.csv", "model-performance.csv",
-        "failures.csv", "manual-metric-validation.json", "model-card.md",
+        "run-manifest.json",
+        "environment.json",
+        "benchmark.json",
+        "raw-results.parquet",
+        "tidy-results.csv",
+        "model-performance.csv",
+        "failures.csv",
+        "manual-metric-validation.json",
+        "model-card.md",
         "SHA256SUMS.txt",
         "tables/table-s2-pilot-summary.csv",
         "tables/table-s2-variance.csv",
@@ -145,7 +157,9 @@ def test_artifacts_schema_valid(tmp_path) -> None:
     assert "files" in manifest
     assert len(manifest["files"]) > 0
 
-    validation_json = json.loads((out_dir / "manual-metric-validation.json").read_text(encoding="utf-8"))
+    validation_json = json.loads(
+        (out_dir / "manual-metric-validation.json").read_text(encoding="utf-8")
+    )
     assert validation_json["status"] == "passed"
     assert validation_json["fidelity_aopc_at_2_computed"] == 2.25
     assert validation_json["stability_jaccard_at_2_computed"] == 1.0

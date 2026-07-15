@@ -77,7 +77,11 @@ class ExplanationBatch(BaseModel):
     def no_nan_or_inf(cls, v: list[list[float]]) -> list[list[float]]:
         for i, row in enumerate(v):
             for j, val in enumerate(row):
-                if not isinstance(val, (int, float)) or val != val or val in (float("inf"), float("-inf")):
+                if (
+                    not isinstance(val, (int, float))
+                    or val != val
+                    or val in (float("inf"), float("-inf"))
+                ):
                     raise ValueError(
                         f"Attribution contains NaN or Inf at sample {i}, feature {j}. "
                         "Batch rejected per DR-003 §4."

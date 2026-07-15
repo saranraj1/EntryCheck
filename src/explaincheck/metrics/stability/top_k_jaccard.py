@@ -132,7 +132,7 @@ class TopKJaccardStability(BaseMetric):
 
         n_total = len(attributions)
         n_rejected = int((~preserved_mask).sum())
-        preservation_rate = float(preserved_mask.mean())
+        preservation_rate = float(preserved_mask.mean())  # noqa: F841 – reserved for future run summary
 
         results: list[MetricResult | FailureRecord] = []
 

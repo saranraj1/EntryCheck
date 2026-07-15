@@ -92,6 +92,7 @@ class LogisticRegressionAdapter(BaseModel):
         ).hexdigest()
 
         import sklearn
+
         return ModelRecord(
             family=self.family,
             implementation="explaincheck.models.logistic_regression.LogisticRegressionAdapter",

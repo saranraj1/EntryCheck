@@ -62,9 +62,14 @@ def test_exact_linear_determinism() -> None:
         exp = ExactLinearExplainer()
         exp.fit(lr, X_tr, FEATURE_NAMES, seed=11)
         records = exp.explain(
-            X_te[:5], run_id="t", dataset="d", seed=11,
-            model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash="h",
-            sample_ids=[f"s{i}" for i in range(5)], protocol_version="1.0.0"
+            X_te[:5],
+            run_id="t",
+            dataset="d",
+            seed=11,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash="h",
+            sample_ids=[f"s{i}" for i in range(5)],
+            protocol_version="1.0.0",
         )
         return [r.attribution for r in records]
 
@@ -86,9 +91,14 @@ def test_negative_control_seed_determinism() -> None:
         neg = RandomizedNegativeControl()
         neg.fit(lr, X_tr, FEATURE_NAMES, seed=11)
         records = neg.explain(
-            X_te[:5], run_id="t", dataset="d", seed=11,
-            model_family=ModelFamily.LOGISTIC_REGRESSION, model_hash="h",
-            sample_ids=[f"s{i}" for i in range(5)], protocol_version="1.0.0"
+            X_te[:5],
+            run_id="t",
+            dataset="d",
+            seed=11,
+            model_family=ModelFamily.LOGISTIC_REGRESSION,
+            model_hash="h",
+            sample_ids=[f"s{i}" for i in range(5)],
+            protocol_version="1.0.0",
         )
         return [r.attribution for r in records]
 
@@ -102,6 +112,7 @@ def test_negative_control_seed_determinism() -> None:
 def test_fidelity_metric_determinism() -> None:
     """Fidelity AOPC must be identical across repeated calls."""
     from explaincheck.metrics.fidelity.aopc import deletion_fidelity_aopc_single
+
     rng = np.random.default_rng(42)
     w = rng.normal(size=5)
     x = rng.normal(size=5)
@@ -116,6 +127,7 @@ def test_fidelity_metric_determinism() -> None:
 def test_stability_metric_determinism() -> None:
     """Jaccard stability must be identical across repeated calls."""
     from explaincheck.metrics.stability.top_k_jaccard import jaccard
+
     rng = np.random.default_rng(42)
     a = rng.normal(size=8)
     ap = rng.normal(size=8)

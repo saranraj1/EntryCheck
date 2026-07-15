@@ -27,6 +27,7 @@ try:
 
     import lime
     import lime.lime_tabular
+
     try:
         LIME_VERSION = _pkg_version("lime")
     except Exception:

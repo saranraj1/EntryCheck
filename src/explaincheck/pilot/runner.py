@@ -66,6 +66,7 @@ TOLERANCES = {
 # Mann-Whitney AUC (migrated from Phase 0)
 # ---------------------------------------------------------------------------
 
+
 def _auc_rank(y: np.ndarray, scores: np.ndarray) -> float:
     order = np.argsort(scores, kind="mergesort")
     ranks = np.empty(len(scores), dtype=float)
@@ -85,7 +86,9 @@ def _auc_rank(y: np.ndarray, scores: np.ndarray) -> float:
 
 def _bootstrap_ci(values: np.ndarray, seed: int, reps: int = 1000) -> tuple[float, float]:
     rng = np.random.default_rng(seed)
-    means = np.array([np.mean(rng.choice(values, size=len(values), replace=True)) for _ in range(reps)])
+    means = np.array(
+        [np.mean(rng.choice(values, size=len(values), replace=True)) for _ in range(reps)]
+    )
     return float(np.quantile(means, 0.025)), float(np.quantile(means, 0.975))
 
 
@@ -97,6 +100,7 @@ def _sigmoid(z: np.ndarray) -> np.ndarray:
 # ---------------------------------------------------------------------------
 # Manual validation fixture (must match Phase 0 exactly)
 # ---------------------------------------------------------------------------
+
 
 def manual_validation() -> dict[str, Any]:
     """
@@ -121,7 +125,12 @@ def manual_validation() -> dict[str, Any]:
     assert abs(stability - 1.0) < 1e-12, f"Stability fixture failed: got {stability}"
 
     return {
-        "fixture": {"x": x.tolist(), "x_prime": xp.tolist(), "weights": w.tolist(), "baseline": baseline.tolist()},
+        "fixture": {
+            "x": x.tolist(),
+            "x_prime": xp.tolist(),
+            "weights": w.tolist(),
+            "baseline": baseline.tolist(),
+        },
         "attribution": a.tolist(),
         "fidelity_aopc_at_2_hand_expected": 2.25,
         "fidelity_aopc_at_2_computed": fidelity,
@@ -134,6 +143,7 @@ def manual_validation() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Per-seed runner
 # ---------------------------------------------------------------------------
+
 
 def _run_seed(seed: int, run_id: str) -> tuple[list[dict], dict, list[dict]]:
     """Run one seed. Returns (metric_rows, model_row, failure_rows)."""
@@ -149,11 +159,16 @@ def _run_seed(seed: int, run_id: str) -> tuple[list[dict], dict, list[dict]]:
     probs = lr.predict_proba(X_te)[:, 1]
     auc = _auc_rank(y_te, probs)
     acc = float(np.mean(lr.predict(X_te) == y_te))
-    coef_cos = float(np.dot(lr.weights, BETA_TRUE) / (np.linalg.norm(lr.weights) * np.linalg.norm(BETA_TRUE)))
+    coef_cos = float(
+        np.dot(lr.weights, BETA_TRUE) / (np.linalg.norm(lr.weights) * np.linalg.norm(BETA_TRUE))
+    )
 
     model_row = {
-        "seed": seed, "accuracy": acc, "roc_auc": auc,
-        "coefficient_cosine_to_truth": coef_cos, "fit_ms": model_record.fit_ms,
+        "seed": seed,
+        "accuracy": acc,
+        "roc_auc": auc,
+        "coefficient_cosine_to_truth": coef_cos,
+        "fit_ms": model_record.fit_ms,
     }
 
     # Explainers
@@ -168,13 +183,16 @@ def _run_seed(seed: int, run_id: str) -> tuple[list[dict], dict, list[dict]]:
 
     metric_rows: list[dict] = []
     failure_rows: list[dict] = []
-    split_rec = split_record(X_tr, X_te, y_tr, y_te, seed)
+    split_rec = split_record(X_tr, X_te, y_tr, y_te, seed)  # noqa: F841 – reserved for future provenance output
 
     for n_eval in EVAL_SIZES:
         Xe = X_te[order[:n_eval]]
         sample_ids = [f"s{seed}-n{n_eval}-{i}" for i in range(n_eval)]
 
-        for method_name, exp in [("exact_linear", exact_exp), ("randomized_negative_control", neg_exp)]:
+        for method_name, exp in [
+            ("exact_linear", exact_exp),
+            ("randomized_negative_control", neg_exp),
+        ]:
             attr_records = exp.explain(
                 Xe,
                 run_id=run_id,
@@ -196,12 +214,14 @@ def _run_seed(seed: int, run_id: str) -> tuple[list[dict], dict, list[dict]]:
 
             # Fidelity
             t_f = time.perf_counter()
-            fid_vals = np.array([
-                deletion_fidelity_aopc_single(
-                    Xe[i], np.array(r.attribution), lr.weights, lr.bias, baseline, KMAX
-                )
-                for i, r in enumerate(good_attrs)
-            ])
+            fid_vals = np.array(
+                [
+                    deletion_fidelity_aopc_single(
+                        Xe[i], np.array(r.attribution), lr.weights, lr.bias, baseline, KMAX
+                    )
+                    for i, r in enumerate(good_attrs)
+                ]
+            )
             f_lo, f_hi = _bootstrap_ci(fid_vals, seed + n_eval)
             rt_f = (time.perf_counter() - t_f) * 1000
 
@@ -228,28 +248,46 @@ def _run_seed(seed: int, run_id: str) -> tuple[list[dict], dict, list[dict]]:
                 stab_vals_list.append(jaccard(attr_orig, attr_pert, KMAX))
 
             stab_vals = np.array(stab_vals_list) if stab_vals_list else np.array([float("nan")])
-            s_lo, s_hi = _bootstrap_ci(stab_vals[~np.isnan(stab_vals)], seed + n_eval + 1) \
-                if not np.all(np.isnan(stab_vals)) else (float("nan"), float("nan"))
+            s_lo, s_hi = (
+                _bootstrap_ci(stab_vals[~np.isnan(stab_vals)], seed + n_eval + 1)
+                if not np.all(np.isnan(stab_vals))
+                else (float("nan"), float("nan"))
+            )
             rt_s = (time.perf_counter() - t_s) * 1000
             preserved_rate = float(preserved.mean())
 
-            metric_rows.extend([
-                {
-                    "seed": seed, "sample_size": n_eval, "explainer": method_name,
-                    "metric": "deletion_fidelity_aopc_at_3",
-                    "estimate": float(np.mean(fid_vals)), "ci_low": f_lo, "ci_high": f_hi,
-                    "n": len(fid_vals), "prediction_preservation_rate": preserved_rate,
-                    "n_rejected": n_rejected, "runtime_ms": rt_f,
-                },
-                {
-                    "seed": seed, "sample_size": n_eval, "explainer": method_name,
-                    "metric": "stability_top3_jaccard",
-                    "estimate": float(np.mean(stab_vals[~np.isnan(stab_vals)])) if not np.all(np.isnan(stab_vals)) else float("nan"),
-                    "ci_low": s_lo, "ci_high": s_hi,
-                    "n": len(stab_vals_list), "prediction_preservation_rate": preserved_rate,
-                    "n_rejected": n_rejected, "runtime_ms": rt_s,
-                },
-            ])
+            metric_rows.extend(
+                [
+                    {
+                        "seed": seed,
+                        "sample_size": n_eval,
+                        "explainer": method_name,
+                        "metric": "deletion_fidelity_aopc_at_3",
+                        "estimate": float(np.mean(fid_vals)),
+                        "ci_low": f_lo,
+                        "ci_high": f_hi,
+                        "n": len(fid_vals),
+                        "prediction_preservation_rate": preserved_rate,
+                        "n_rejected": n_rejected,
+                        "runtime_ms": rt_f,
+                    },
+                    {
+                        "seed": seed,
+                        "sample_size": n_eval,
+                        "explainer": method_name,
+                        "metric": "stability_top3_jaccard",
+                        "estimate": float(np.mean(stab_vals[~np.isnan(stab_vals)]))
+                        if not np.all(np.isnan(stab_vals))
+                        else float("nan"),
+                        "ci_low": s_lo,
+                        "ci_high": s_hi,
+                        "n": len(stab_vals_list),
+                        "prediction_preservation_rate": preserved_rate,
+                        "n_rejected": n_rejected,
+                        "runtime_ms": rt_s,
+                    },
+                ]
+            )
 
     return metric_rows, model_row, failure_rows
 
@@ -257,6 +295,7 @@ def _run_seed(seed: int, run_id: str) -> tuple[list[dict], dict, list[dict]]:
 # ---------------------------------------------------------------------------
 # Full pilot run
 # ---------------------------------------------------------------------------
+
 
 def run_pilot(
     seeds: list[int] = FROZEN_SEEDS,
@@ -292,6 +331,7 @@ def run_pilot(
 # Reproduction check
 # ---------------------------------------------------------------------------
 
+
 def check_reproduction(results: pd.DataFrame, models: pd.DataFrame) -> dict[str, Any]:
     """
     Compare Stage 2 results against Phase 0 reference values within declared tolerances.
@@ -303,27 +343,43 @@ def check_reproduction(results: pd.DataFrame, models: pd.DataFrame) -> dict[str,
 
     def chk(key: str, got: float, ref: float, tol: float) -> dict:
         ok = abs(got - ref) <= tol
-        return {"got": round(got, 6), "reference": ref, "tolerance": tol, "passed": ok, "delta": round(got - ref, 6)}
+        return {
+            "got": round(got, 6),
+            "reference": ref,
+            "tolerance": tol,
+            "passed": ok,
+            "delta": round(got - ref, 6),
+        }
 
     checks["roc_auc_mean"] = chk("roc_auc_mean", float(models.roc_auc.mean()), 0.878, 0.005)
-    checks["coef_cosine_mean"] = chk("coef_cosine_mean", float(models.coefficient_cosine_to_truth.mean()), 0.998, 0.002)
+    checks["coef_cosine_mean"] = chk(
+        "coef_cosine_mean", float(models.coefficient_cosine_to_truth.mean()), 0.998, 0.002
+    )
 
     try:
         checks["exact_fidelity_n200"] = chk(
             "exact_fidelity_n200",
-            float(n200.loc[("exact_linear", "deletion_fidelity_aopc_at_3")]), 1.764, 0.020
+            float(n200.loc[("exact_linear", "deletion_fidelity_aopc_at_3")]),
+            1.764,
+            0.020,
         )
         checks["neg_fidelity_n200"] = chk(
             "neg_fidelity_n200",
-            float(n200.loc[("randomized_negative_control", "deletion_fidelity_aopc_at_3")]), 0.753, 0.030
+            float(n200.loc[("randomized_negative_control", "deletion_fidelity_aopc_at_3")]),
+            0.753,
+            0.030,
         )
         checks["exact_stability_n200"] = chk(
             "exact_stability_n200",
-            float(n200.loc[("exact_linear", "stability_top3_jaccard")]), 0.957, 0.015
+            float(n200.loc[("exact_linear", "stability_top3_jaccard")]),
+            0.957,
+            0.015,
         )
         checks["neg_stability_n200"] = chk(
             "neg_stability_n200",
-            float(n200.loc[("randomized_negative_control", "stability_top3_jaccard")]), 0.259, 0.020
+            float(n200.loc[("randomized_negative_control", "stability_top3_jaccard")]),
+            0.259,
+            0.020,
         )
     except KeyError as e:
         checks["_error"] = f"Missing metric key: {e}"
@@ -336,6 +392,7 @@ def check_reproduction(results: pd.DataFrame, models: pd.DataFrame) -> dict[str,
 # ---------------------------------------------------------------------------
 # Output writers
 # ---------------------------------------------------------------------------
+
 
 def write_outputs(
     results: pd.DataFrame,
@@ -384,21 +441,27 @@ def write_outputs(
     )
 
     # Summary tables
-    summary = results.groupby(["sample_size", "explainer", "metric"])["estimate"].agg(
-        ["mean", "std", "min", "max"]
-    ).reset_index()
+    summary = (
+        results.groupby(["sample_size", "explainer", "metric"])["estimate"]
+        .agg(["mean", "std", "min", "max"])
+        .reset_index()
+    )
     summary.to_csv(tables_dir / "table-s2-pilot-summary.csv", index=False)
 
-    variance = results.groupby(["sample_size", "explainer", "metric"])["estimate"].std().reset_index(
-        name="sd_across_seeds"
+    variance = (
+        results.groupby(["sample_size", "explainer", "metric"])["estimate"]
+        .std()
+        .reset_index(name="sd_across_seeds")
     )
     variance.to_csv(tables_dir / "table-s2-variance.csv", index=False)
 
     # LaTeX table
     final = summary[summary.sample_size == 200].copy()
     lines = [
-        "\\begin{tabular}{llrr}", "\\toprule",
-        "Explainer & Metric & Mean & SD \\\\", "\\midrule"
+        "\\begin{tabular}{llrr}",
+        "\\toprule",
+        "Explainer & Metric & Mean & SD \\\\",
+        "\\midrule",
     ]
     for _, r in final.iterrows():
         e = str(r.explainer).replace("_", "\\_")
@@ -418,11 +481,15 @@ def write_outputs(
     n200 = final.pivot(index="explainer", columns="metric", values="mean")
     result_records = []
     for _, r in final.iterrows():
-        result_records.append({
-            "explainer": r.explainer, "metric": r.metric,
-            "sampleSize": int(r.sample_size), "estimate": float(r["mean"]),
-            "sdAcrossSeeds": float(r["std"]),
-        })
+        result_records.append(
+            {
+                "explainer": r.explainer,
+                "metric": r.metric,
+                "sampleSize": int(r.sample_size),
+                "estimate": float(r["mean"]),
+                "sdAcrossSeeds": float(r["std"]),
+            }
+        )
 
     benchmark = {
         "schemaVersion": "1.0.0",
@@ -536,17 +603,31 @@ This artifact validates Stage 2 machinery. It is not evidence that ExplainCheck 
 
 def _write_figures(results: pd.DataFrame, figures_dir: Path) -> None:
     import matplotlib
+
     matplotlib.use("Agg")  # non-interactive backend — required for headless/CI environments
     import matplotlib.pyplot as plt
 
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10, "axes.titlesize": 12})
     colors = {"exact_linear": "#2783DE", "randomized_negative_control": "#D5803B"}
-    labels = {"exact_linear": "Exact linear (reference)", "randomized_negative_control": "Randomized (negative control)"}
+    labels = {
+        "exact_linear": "Exact linear (reference)",
+        "randomized_negative_control": "Randomized (negative control)",
+    }
 
     fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.1), constrained_layout=True)
     for ax, metric, title, ylabel in [
-        (axes[0], "deletion_fidelity_aopc_at_3", "Fidelity under top-feature deletion", "Mean absolute logit change"),
-        (axes[1], "stability_top3_jaccard", "Stability (prediction-preserving noise)", "Top-3 Jaccard similarity"),
+        (
+            axes[0],
+            "deletion_fidelity_aopc_at_3",
+            "Fidelity under top-feature deletion",
+            "Mean absolute logit change",
+        ),
+        (
+            axes[1],
+            "stability_top3_jaccard",
+            "Stability (prediction-preserving noise)",
+            "Top-3 Jaccard similarity",
+        ),
     ]:
         sub = results[(results.metric == metric) & (results.sample_size == 200)]
         for xi, method in enumerate(["exact_linear", "randomized_negative_control"]):
@@ -555,8 +636,17 @@ def _write_figures(results: pd.DataFrame, figures_dir: Path) -> None:
                 continue
             mean = vals.mean()
             lo, hi = np.quantile(vals, [0.025, 0.975])
-            ax.errorbar(xi, mean, yerr=[[mean - lo], [hi - mean]], fmt="o",
-                        color=colors[method], markersize=8, capsize=5, linewidth=2, label=labels[method])
+            ax.errorbar(
+                xi,
+                mean,
+                yerr=[[mean - lo], [hi - mean]],
+                fmt="o",
+                color=colors[method],
+                markersize=8,
+                capsize=5,
+                linewidth=2,
+                label=labels[method],
+            )
         ax.set_xticks([0, 1], ["Exact\nreference", "Negative\ncontrol"])
         ax.set_title(title, loc="left", fontweight="bold")
         ax.set_ylabel(ylabel)
@@ -564,23 +654,44 @@ def _write_figures(results: pd.DataFrame, figures_dir: Path) -> None:
         ax.spines[["top", "right"]].set_visible(False)
         ax.set_facecolor("#F9F8F7")
 
-    fig.suptitle("ExplainCheck Stage 2 synthetic pilot · 10 seeds · n=200", x=0.01, ha="left",
-                 fontsize=13, fontweight="bold", color="#2C2C2B")
+    fig.suptitle(
+        "ExplainCheck Stage 2 synthetic pilot · 10 seeds · n=200",
+        x=0.01,
+        ha="left",
+        fontsize=13,
+        fontweight="bold",
+        color="#2C2C2B",
+    )
     fig.savefig(figures_dir / "fig-s2-pilot-metrics.pdf", bbox_inches="tight")
     fig.savefig(figures_dir / "fig-s2-pilot-metrics.png", dpi=180, bbox_inches="tight")
     plt.close(fig)
 
     # Variance plot
-    var = results.groupby(["sample_size", "explainer", "metric"])["estimate"].std().reset_index(name="sd_across_seeds")
+    var = (
+        results.groupby(["sample_size", "explainer", "metric"])["estimate"]
+        .std()
+        .reset_index(name="sd_across_seeds")
+    )
     fig, ax = plt.subplots(figsize=(7.2, 4.2), constrained_layout=True)
     markers = {"deletion_fidelity_aopc_at_3": "o", "stability_top3_jaccard": "s"}
     for (m_name, metr_name), g in var.groupby(["explainer", "metric"]):
         method_str, metric_str = str(m_name), str(metr_name)
-        ax.plot(g.sample_size, g.sd_across_seeds, marker=markers.get(metric_str, "o"),
-                color=colors.get(method_str, "gray"), linestyle="-" if "fidelity" in metric_str else "--",
-                linewidth=2, markersize=6,
-                label=f"{labels.get(method_str, method_str)} · {'fidelity' if 'fidelity' in metric_str else 'stability'}")
-    ax.set_title("Variance decreases as evaluation sample size increases", loc="left", fontsize=12, fontweight="bold")
+        ax.plot(
+            g.sample_size,
+            g.sd_across_seeds,
+            marker=markers.get(metric_str, "o"),
+            color=colors.get(method_str, "gray"),
+            linestyle="-" if "fidelity" in metric_str else "--",
+            linewidth=2,
+            markersize=6,
+            label=f"{labels.get(method_str, method_str)} · {'fidelity' if 'fidelity' in metric_str else 'stability'}",
+        )
+    ax.set_title(
+        "Variance decreases as evaluation sample size increases",
+        loc="left",
+        fontsize=12,
+        fontweight="bold",
+    )
     ax.set_xlabel("Explanations evaluated per seed")
     ax.set_ylabel("Standard deviation across seeds")
     ax.set_facecolor("#F9F8F7")

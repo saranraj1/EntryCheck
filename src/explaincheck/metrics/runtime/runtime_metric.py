@@ -13,10 +13,9 @@ from __future__ import annotations
 
 import time
 import tracemalloc
+from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
-from collections.abc import Generator
-
 
 from explaincheck.contracts import (
     AttributionRecord,
@@ -106,41 +105,45 @@ class RuntimeMetric(BaseMetric):
             try:
                 rt_val = rec.runtime_ms
                 rt = (time.perf_counter() - t0) * 1000
-                results.append(MetricResult(
-                    run_id=run_id,
-                    protocol_version=protocol_version,
-                    dataset=dataset,
-                    dataset_version=dataset_version,
-                    split_hash=split_hash,
-                    model_family=model_family,
-                    model_hash=model_hash,
-                    explainer=rec.explainer,
-                    explainer_version=rec.explainer_version,
-                    seed=seed,
-                    sample_id=rec.sample_id,
-                    metric_family=self.family,
-                    metric_name=self.name,
-                    stressor=stressor,
-                    stress_level=stress_level,
-                    subgroup=subgroup,
-                    subgroup_value=subgroup_value,
-                    prediction_preservation_status=PredictionPreservationStatus.NOT_APPLICABLE,
-                    estimate=float(rt_val),
-                    runtime_ms=rt,
-                    status=RunStatus.SUCCESS,
-                ))
+                results.append(
+                    MetricResult(
+                        run_id=run_id,
+                        protocol_version=protocol_version,
+                        dataset=dataset,
+                        dataset_version=dataset_version,
+                        split_hash=split_hash,
+                        model_family=model_family,
+                        model_hash=model_hash,
+                        explainer=rec.explainer,
+                        explainer_version=rec.explainer_version,
+                        seed=seed,
+                        sample_id=rec.sample_id,
+                        metric_family=self.family,
+                        metric_name=self.name,
+                        stressor=stressor,
+                        stress_level=stress_level,
+                        subgroup=subgroup,
+                        subgroup_value=subgroup_value,
+                        prediction_preservation_status=PredictionPreservationStatus.NOT_APPLICABLE,
+                        estimate=float(rt_val),
+                        runtime_ms=rt,
+                        status=RunStatus.SUCCESS,
+                    )
+                )
             except Exception as exc:
-                results.append(FailureRecord(
-                    run_id=run_id,
-                    timestamp=ts,
-                    dataset=dataset,
-                    model_family=model_family,
-                    explainer=rec.explainer,
-                    metric_name=self.name,
-                    seed=seed,
-                    failure_reason=str(exc),
-                    is_deterministic=True,
-                    excluded=False,
-                ))
+                results.append(
+                    FailureRecord(
+                        run_id=run_id,
+                        timestamp=ts,
+                        dataset=dataset,
+                        model_family=model_family,
+                        explainer=rec.explainer,
+                        metric_name=self.name,
+                        seed=seed,
+                        failure_reason=str(exc),
+                        is_deterministic=True,
+                        excluded=False,
+                    )
+                )
 
         return results

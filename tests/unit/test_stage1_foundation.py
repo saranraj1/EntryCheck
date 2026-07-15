@@ -37,6 +37,7 @@ from explaincheck.provenance import (
 # Package metadata
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_package_version_defined() -> None:
     assert explaincheck.__version__ == "0.1.0-dev"
@@ -55,6 +56,7 @@ def test_protocol_version_correct() -> None:
 # ---------------------------------------------------------------------------
 # Enum correctness
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 def test_run_status_values() -> None:
@@ -83,17 +85,23 @@ def test_metric_family_seven_dimensions() -> None:
     """H1 wording correction: seven evaluation dimensions must all be present."""
     families = {f.value for f in MetricFamily}
     required = {
-        "fidelity", "stability", "sparsity",
-        "runtime", "correlation", "missingness", "subgroup"
+        "fidelity",
+        "stability",
+        "sparsity",
+        "runtime",
+        "correlation",
+        "missingness",
+        "subgroup",
     }
-    assert required == families, (
-        f"MetricFamily must contain exactly 7 families. Missing: {required - families}"
-    )
+    assert (
+        required == families
+    ), f"MetricFamily must contain exactly 7 families. Missing: {required - families}"
 
 
 # ---------------------------------------------------------------------------
 # Pydantic model validation
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 def test_dataset_record_immutable() -> None:
@@ -155,6 +163,7 @@ def test_metric_result_schema_version() -> None:
 # Provenance hashing
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_hash_string_deterministic() -> None:
     h1 = hash_string("explaincheck")
@@ -167,6 +176,7 @@ def test_hash_string_deterministic() -> None:
 def test_hash_bytes_known_value() -> None:
     # SHA-256 of b"" is well-known
     import hashlib
+
     expected = hashlib.sha256(b"").hexdigest()
     assert hash_bytes(b"") == expected
 
@@ -195,6 +205,7 @@ def test_new_run_id_unique() -> None:
 def test_utc_now_iso_format() -> None:
     ts = utc_now_iso()
     from datetime import datetime
+
     # Must parse as UTC ISO-8601
     dt = datetime.fromisoformat(ts)
     assert dt.tzinfo is not None
@@ -203,6 +214,7 @@ def test_utc_now_iso_format() -> None:
 # ---------------------------------------------------------------------------
 # Config loading
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 def test_load_pilot_config(tmp_path: Path) -> None:
@@ -231,8 +243,10 @@ def test_config_hash_changes_with_content(tmp_path: Path) -> None:
     base = "run_label: smoke\nstatus: infrastructure-only\nseeds: [11]\n"
     modified = base + "# comment added\n"
 
-    f1 = tmp_path / "a.yaml"; f1.write_text(base, encoding="utf-8")
-    f2 = tmp_path / "b.yaml"; f2.write_text(modified, encoding="utf-8")
+    f1 = tmp_path / "a.yaml"
+    f1.write_text(base, encoding="utf-8")
+    f2 = tmp_path / "b.yaml"
+    f2.write_text(modified, encoding="utf-8")
 
     _, h1 = load_config(f1)
     _, h2 = load_config(f2)

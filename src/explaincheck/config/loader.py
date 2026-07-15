@@ -48,7 +48,7 @@ class ExperimentConfig(BaseModel):
     seeds: list[int]
     protocol_version: str = "1.0.0"
     study_id: str = "EC-TABULAR-001"
-    dataset_mode: str = "real"       # "real" or "synthetic"
+    dataset_mode: str = "real"  # "real" or "synthetic"
     synthetic: SyntheticConfig | None = None
     output_dir: str = "artifacts/pilot"
     overwrite_protection: bool = False
