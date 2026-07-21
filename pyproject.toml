@@ -135,7 +135,10 @@ markers = [
 
 [tool.coverage.run]
 source = ["src/explaincheck"]
-omit = ["*/tests/*"]
+omit = [
+    "*/tests/*",
+    "src/explaincheck/validation/*",   # standalone reference scripts, not unit-testable
+]
 
 [tool.coverage.report]
 fail_under = 80
