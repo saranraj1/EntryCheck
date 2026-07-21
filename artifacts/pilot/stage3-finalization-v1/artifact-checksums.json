@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Trusted checksum manifest for artifact validation (DR-006C)",
+  "note": "This file is excluded from its own checksum computation. It is itself not checksummed.",
+  "hashing_algorithm": "sha256",
+  "files": {
+    "determinism-matrix-provenance.json": {
+      "sha256": "2a2ae51322bf9da76f75a337ddab0f568d4ac4174dd26c24b83cc9888236c215",
+      "size_bytes": 5376
+    },
+    "determinism-matrix.json": {
+      "sha256": "720599996c0cbdaf81d3d20f1cab7a266985256473d415a58accba21ca25dc41",
+      "size_bytes": 8527
+    },
+    "kernelshap-multiseed-summary.json": {
+      "sha256": "bd30ff33739fc832999318378b1c11e9aa4329a1e59e3805917652ffa727abe5",
+      "size_bytes": 3599
+    },
+    "kernelshap-multiseed.csv": {
+      "sha256": "e2fdac55f545298b8319b4226feecfe1e2931925d1db6a0d605a21240e3cb996",
+      "size_bytes": 664
+    },
+    "lime-multiseed-summary.json": {
+      "sha256": "8f413d3a5f63e6105d921d90c3a95698861be69910baed4d4c872883e63dcf51",
+      "size_bytes": 3770
+    },
+    "lime-multiseed.csv": {
+      "sha256": "bc4e39ca73a9f49d5ddb44fa43508164d8bf5aa0265e002ad06eb836df47f850",
+      "size_bytes": 781
+    },
+    "run-manifest.json": {
+      "sha256": "3ae09462cbee53df8dc9365e187e6a50904a884ecab8a42c762d191283ea0769",
+      "size_bytes": 2433
+    }
+  },
+  "required_json_fields": {
+    "run-manifest.json": [
+      "schema_version",
+      "generated_at",
+      "phase",
+      "classification",
+      "decision_record",
+      "commit",
+      "seeds",
+      "artifact_files",
+      "validation_results",
+      "test_suite",
+      "static_analysis"
+    ],
+    "kernelshap-multiseed-summary.json": [
+      "seeds",
+      "frozen_gates",
+      "5_seed_mean_results",
+      "gate_results",
+      "descriptive_stats",
+      "per_seed"
+    ],
+    "lime-multiseed-summary.json": [
+      "seeds",
+      "frozen_gates",
+      "5_seed_mean_results",
+      "gate_results",
+      "descriptive_stats",
+      "per_seed"
+    ],
+    "determinism-matrix.json": [
+      "cells",
+      "seeds",
+      "schema_version",
+      "all_schema_valid"
+    ],
+    "determinism-matrix-provenance.json": [
+      "schema_version",
+      "purpose",
+      "source_artifact",
+      "source_artifact_sha256",
+      "cells"
+    ]
+  }
+}
