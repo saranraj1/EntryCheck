@@ -1,0 +1,290 @@
+{
+  "cells": [
+    {
+      "cell": "rf+kernelshap",
+      "model": "rf",
+      "explainer": "kernelshap",
+      "same_seed_repeatability": {
+        "seed": 0,
+        "same_model_predictions": true,
+        "same_background_hash": true,
+        "same_attributions": true,
+        "max_attribution_diff": 0.0,
+        "all_repeat_checks_pass": true
+      },
+      "different_seed_sensitivity": {
+        "seeds": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "cross_seed_std_of_mean_attrs": 0.0790381038118219,
+        "all_seeds_attrs_finite": true,
+        "all_seeds_preds_finite": true,
+        "note": "Different outputs across seeds are expected for stochastic methods and not classified as failures."
+      },
+      "per_seed_results": [
+        {
+          "seed": 0,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 0.4175078131278551,
+          "runtime_ms": 1514.5223999998052,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 1,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 0.2371203498927611,
+          "runtime_ms": 1539.0871999998126,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 2,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 0.39175670598548706,
+          "runtime_ms": 1545.8783000003677,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 3,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 0.24687612597206443,
+          "runtime_ms": 1530.1741000002949,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 4,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 0.26424599589128,
+          "runtime_ms": 1547.5013000004765,
+          "n_samples": 20,
+          "predictions_finite": true
+        }
+      ],
+      "schema_valid": true
+    },
+    {
+      "cell": "rf+lime",
+      "model": "rf",
+      "explainer": "lime",
+      "same_seed_repeatability": {
+        "seed": 0,
+        "same_model_predictions": true,
+        "same_background_hash": true,
+        "same_attributions": true,
+        "max_attribution_diff": 0.0,
+        "all_repeat_checks_pass": true
+      },
+      "different_seed_sensitivity": {
+        "seeds": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "cross_seed_std_of_mean_attrs": 0.0918035811907574,
+        "all_seeds_attrs_finite": true,
+        "all_seeds_preds_finite": true,
+        "note": "Different outputs across seeds are expected for stochastic methods and not classified as failures."
+      },
+      "per_seed_results": [
+        {
+          "seed": 0,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 1.8101918547359128,
+          "runtime_ms": 178.40570000043954,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 1,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 1.7129309228143583,
+          "runtime_ms": 169.80469999998604,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 2,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 2.1110051171847366,
+          "runtime_ms": 173.47239999980957,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 3,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 1.745150011988274,
+          "runtime_ms": 172.21040000003995,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 4,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 2.3741414566587946,
+          "runtime_ms": 187.23700000009558,
+          "n_samples": 20,
+          "predictions_finite": true
+        }
+      ],
+      "schema_valid": true
+    },
+    {
+      "cell": "xgb+kernelshap",
+      "model": "xgb",
+      "explainer": "kernelshap",
+      "same_seed_repeatability": {
+        "seed": 0,
+        "same_model_predictions": true,
+        "same_background_hash": true,
+        "same_attributions": true,
+        "max_attribution_diff": 0.0,
+        "all_repeat_checks_pass": true
+      },
+      "different_seed_sensitivity": {
+        "seeds": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "cross_seed_std_of_mean_attrs": 0.09534199234149388,
+        "all_seeds_attrs_finite": true,
+        "all_seeds_preds_finite": true,
+        "note": "Different outputs across seeds are expected for stochastic methods and not classified as failures."
+      },
+      "per_seed_results": [
+        {
+          "seed": 0,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 0.4713456243876611,
+          "runtime_ms": 1564.4917999998142,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 1,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 0.24258466548370744,
+          "runtime_ms": 1723.9821000002848,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 2,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 0.4417144257885887,
+          "runtime_ms": 1578.287399999681,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 3,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 0.26362785522653615,
+          "runtime_ms": 1535.6020000008357,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 4,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 0.24878083112386165,
+          "runtime_ms": 1648.508999999649,
+          "n_samples": 20,
+          "predictions_finite": true
+        }
+      ],
+      "schema_valid": true
+    },
+    {
+      "cell": "xgb+lime",
+      "model": "xgb",
+      "explainer": "lime",
+      "same_seed_repeatability": {
+        "seed": 0,
+        "same_model_predictions": true,
+        "same_background_hash": true,
+        "same_attributions": true,
+        "max_attribution_diff": 0.0,
+        "all_repeat_checks_pass": true
+      },
+      "different_seed_sensitivity": {
+        "seeds": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "cross_seed_std_of_mean_attrs": 0.09027813240250482,
+        "all_seeds_attrs_finite": true,
+        "all_seeds_preds_finite": true,
+        "note": "Different outputs across seeds are expected for stochastic methods and not classified as failures."
+      },
+      "per_seed_results": [
+        {
+          "seed": 0,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 2.0647639356273606,
+          "runtime_ms": 121.46119999943039,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 1,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 2.09655472418961,
+          "runtime_ms": 101.4194999997926,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 2,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 2.334669031574398,
+          "runtime_ms": 105.46989999966172,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 3,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 2.0291529957084964,
+          "runtime_ms": 122.44720000035159,
+          "n_samples": 20,
+          "predictions_finite": true
+        },
+        {
+          "seed": 4,
+          "all_attrs_finite": true,
+          "mean_attr_l2_norm": 2.653739308070567,
+          "runtime_ms": 113.87060000015481,
+          "n_samples": 20,
+          "predictions_finite": true
+        }
+      ],
+      "schema_valid": true
+    }
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "schema_version": "1.0",
+  "all_schema_valid": true,
+  "note": "Different outputs across seeds for stochastic methods (KernelSHAP, LIME) are expected and not classified as failures per DR-006A \u00a79."
+}

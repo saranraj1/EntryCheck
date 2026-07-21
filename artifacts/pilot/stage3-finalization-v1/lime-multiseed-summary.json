@@ -1,0 +1,138 @@
+{
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "n_seeds": 5,
+  "frozen_gates": {
+    "mean_cosine_threshold": 0.95,
+    "mean_sign_agree_threshold": 0.9,
+    "mean_topk_recall_threshold": 0.9
+  },
+  "5_seed_mean_results": {
+    "mean_cosine": 0.9986598376326408,
+    "mean_sign_agree": 1.0,
+    "mean_topk_recall": 1.0
+  },
+  "gate_results": {
+    "cosine_pass": true,
+    "sign_agree_pass": true,
+    "topk_recall_pass": true,
+    "all_gates_pass": true
+  },
+  "descriptive_stats": {
+    "mean_cosine": {
+      "mean": 0.9986598376326408,
+      "sd": 0.000868013411429938,
+      "min": 0.9978044335164261,
+      "max": 0.9995730008454075
+    },
+    "mean_sign_agree": {
+      "mean": 1.0,
+      "sd": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "mean_topk_recall": {
+      "mean": 1.0,
+      "sd": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "mean_spearman": {
+      "mean": 0.9759000729485333,
+      "sd": 0.0,
+      "min": 0.9759000729485333,
+      "max": 0.9759000729485333
+    },
+    "std_attribution": {
+      "mean": 0.9825455906585169,
+      "sd": 0.03316490929922937,
+      "min": 0.9372948986271582,
+      "max": 1.028475782635151
+    },
+    "runtime_ms": {
+      "mean": 91.41191999988223,
+      "sd": 3.1945588689320252,
+      "min": 88.90210000026855,
+      "max": 96.7516999999134
+    }
+  },
+  "kernel_width_actual": 2.449489742783178,
+  "per_seed": [
+    {
+      "seed": 0,
+      "mean_cosine": 0.9995317230358627,
+      "mean_sign_agree": 1.0,
+      "mean_topk_recall": 1.0,
+      "mean_spearman": 0.9759000729485333,
+      "std_attribution": 0.9372948986271582,
+      "kernel_width": 2.449489742783178,
+      "runtime_ms": 96.7516999999134,
+      "gate_cosine": true,
+      "gate_sign_agree": true,
+      "gate_topk_recall": true,
+      "all_gates_pass": true
+    },
+    {
+      "seed": 1,
+      "mean_cosine": 0.9978044335164261,
+      "mean_sign_agree": 1.0,
+      "mean_topk_recall": 1.0,
+      "mean_spearman": 0.9759000729485333,
+      "std_attribution": 0.9848163178541328,
+      "kernel_width": 2.449489742783178,
+      "runtime_ms": 89.88119999958144,
+      "gate_cosine": true,
+      "gate_sign_agree": true,
+      "gate_topk_recall": true,
+      "all_gates_pass": true
+    },
+    {
+      "seed": 2,
+      "mean_cosine": 0.99855271796184,
+      "mean_sign_agree": 1.0,
+      "mean_topk_recall": 1.0,
+      "mean_spearman": 0.9759000729485333,
+      "std_attribution": 1.028475782635151,
+      "kernel_width": 2.449489742783178,
+      "runtime_ms": 91.94999999999709,
+      "gate_cosine": true,
+      "gate_sign_agree": true,
+      "gate_topk_recall": true,
+      "all_gates_pass": true
+    },
+    {
+      "seed": 3,
+      "mean_cosine": 0.9978373128036674,
+      "mean_sign_agree": 1.0,
+      "mean_topk_recall": 1.0,
+      "mean_spearman": 0.9759000729485333,
+      "std_attribution": 0.9702786040141145,
+      "kernel_width": 2.449489742783178,
+      "runtime_ms": 88.90210000026855,
+      "gate_cosine": true,
+      "gate_sign_agree": true,
+      "gate_topk_recall": true,
+      "all_gates_pass": true
+    },
+    {
+      "seed": 4,
+      "mean_cosine": 0.9995730008454075,
+      "mean_sign_agree": 1.0,
+      "mean_topk_recall": 1.0,
+      "mean_spearman": 0.9759000729485333,
+      "std_attribution": 0.9918623501620277,
+      "kernel_width": 2.449489742783178,
+      "runtime_ms": 89.57459999965067,
+      "gate_cosine": true,
+      "gate_sign_agree": true,
+      "gate_topk_recall": true,
+      "all_gates_pass": true
+    }
+  ],
+  "note": "Gate failures recorded exactly as observed \u2014 seeds never removed or settings adjusted after inspecting outcomes (DR-006A \u00a73)."
+}

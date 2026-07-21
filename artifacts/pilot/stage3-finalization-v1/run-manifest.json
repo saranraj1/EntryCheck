@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-21T05:19:19.954614Z",
+  "phase": "Stage 3 (pre-confirmatory)",
+  "classification": "infrastructure-pilot",
+  "decision_record": "DR-006A",
+  "commit": "e2e0b0adcc1c8c9ec08d7b3bd0e0866d2753659a",
+  "commit_message": "Stage 3 remediation: Option B+ metric contracts + validation suite (DR-006A Steps 4-7)",
+  "python_version": "Python 3.12.9",
+  "platform": "windows",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "artifact_files": {
+    "determinism-matrix.json": "720599996c0cbdaf81d3d20f1cab7a266985256473d415a58accba21ca25dc41",
+    "kernelshap-multiseed-summary.json": "bd30ff33739fc832999318378b1c11e9aa4329a1e59e3805917652ffa727abe5",
+    "kernelshap-multiseed.csv": "e2fdac55f545298b8319b4226feecfe1e2931925d1db6a0d605a21240e3cb996",
+    "lime-multiseed-summary.json": "8f413d3a5f63e6105d921d90c3a95698861be69910baed4d4c872883e63dcf51",
+    "lime-multiseed.csv": "bc4e39ca73a9f49d5ddb44fa43508164d8bf5aa0265e002ad06eb836df47f850"
+  },
+  "validation_results": {
+    "kernelshap_multiseed": {
+      "frozen_gates": {
+        "mean_cosine_threshold": 0.99,
+        "mean_spearman_threshold": 0.95,
+        "mean_sign_agree_threshold": 0.95
+      },
+      "5_seed_mean": {
+        "mean_cosine": 1.0,
+        "mean_spearman": 1.0,
+        "mean_sign_agree": 1.0
+      },
+      "gate_results": {
+        "cosine_pass": true,
+        "spearman_pass": true,
+        "sign_agree_pass": true,
+        "all_gates_pass": true
+      }
+    },
+    "lime_multiseed": {
+      "frozen_gates": {
+        "mean_cosine_threshold": 0.95,
+        "mean_sign_agree_threshold": 0.9,
+        "mean_topk_recall_threshold": 0.9
+      },
+      "5_seed_mean": {
+        "mean_cosine": 0.9986598376326408,
+        "mean_sign_agree": 1.0,
+        "mean_topk_recall": 1.0
+      },
+      "gate_results": {
+        "cosine_pass": true,
+        "sign_agree_pass": true,
+        "topk_recall_pass": true,
+        "all_gates_pass": true
+      }
+    },
+    "determinism_matrix": {
+      "all_schema_valid": true,
+      "cells_pass": true
+    }
+  },
+  "test_suite": {
+    "platform": "windows/python-3.12.9",
+    "total_collected": 155,
+    "passed": 155,
+    "failed": 0,
+    "errors": 0
+  },
+  "static_analysis": {
+    "mypy": "success: no issues found in 54 source files",
+    "ruff": "all checks passed (70 files)"
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "n_seeds": 5,
+  "frozen_gates": {
+    "mean_cosine_threshold": 0.99,
+    "mean_spearman_threshold": 0.95,
+    "mean_sign_agree_threshold": 0.95
+  },
+  "5_seed_mean_results": {
+    "mean_cosine": 1.0,
+    "mean_spearman": 1.0,
+    "mean_sign_agree": 1.0
+  },
+  "gate_results": {
+    "cosine_pass": true,
+    "spearman_pass": true,
+    "sign_agree_pass": true,
+    "all_gates_pass": true
+  },
+  "descriptive_stats": {
+    "mean_cosine": {
+      "mean": 1.0,
+      "sd": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "mean_spearman": {
+      "mean": 1.0,
+      "sd": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "mean_sign_agree": {
+      "mean": 1.0,
+      "sd": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "mean_mae": {
+      "mean": 4.446477546692547e-16,
+      "sd": 4.6898246338972025e-17,
+      "min": 3.882799030213713e-16,
+      "max": 5.167090713631417e-16
+    },
+    "max_mae": {
+      "mean": 3.377853552422039e-15,
+      "sd": 1.3562511460955015e-15,
+      "min": 2.1649348980190553e-15,
+      "max": 5.6343818499726694e-15
+    },
+    "mean_topk_agree": {
+      "mean": 1.0,
+      "sd": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "runtime_ms": {
+      "mean": 1550.3524600000674,
+      "sd": 34.67409365383396,
+      "min": 1507.8940999992483,
+      "max": 1601.0016999998697
+    }
+  },
+  "per_seed": [
+    {
+      "seed": 0,
+      "mean_cosine": 1.0,
+      "mean_spearman": 1.0,
+      "mean_sign_agree": 1.0,
+      "mean_mae": 4.525911618859698e-16,
+      "max_mae": 3.552713678800501e-15,
+      "mean_topk_agree": 1.0,
+      "runtime_ms": 1532.7389000003677,
+      "gate_cosine": true,
+      "gate_spearman": true,
+      "gate_sign_agree": true,
+      "all_gates_pass": true
+    },
+    {
+      "seed": 1,
+      "mean_cosine": 1.0,
+      "mean_spearman": 1.0,
+      "mean_sign_agree": 1.0,
+      "mean_mae": 4.2630377671224834e-16,
+      "max_mae": 2.1649348980190553e-15,
+      "mean_topk_agree": 1.0,
+      "runtime_ms": 1507.8940999992483,
+      "gate_cosine": true,
+      "gate_spearman": true,
+      "gate_sign_agree": true,
+      "all_gates_pass": true
+    },
+    {
+      "seed": 2,
+      "mean_cosine": 1.0,
+      "mean_spearman": 1.0,
+      "mean_sign_agree": 1.0,
+      "mean_mae": 3.882799030213713e-16,
+      "max_mae": 2.6645352591003757e-15,
+      "mean_topk_agree": 1.0,
+      "runtime_ms": 1548.4880000003614,
+      "gate_cosine": true,
+      "gate_spearman": true,
+      "gate_sign_agree": true,
+      "all_gates_pass": true
+    },
+    {
+      "seed": 3,
+      "mean_cosine": 1.0,
+      "mean_spearman": 1.0,
+      "mean_sign_agree": 1.0,
+      "mean_mae": 5.167090713631417e-16,
+      "max_mae": 5.6343818499726694e-15,
+      "mean_topk_agree": 1.0,
+      "runtime_ms": 1561.6396000004897,
+      "gate_cosine": true,
+      "gate_spearman": true,
+      "gate_sign_agree": true,
+      "all_gates_pass": true
+    },
+    {
+      "seed": 4,
+      "mean_cosine": 1.0,
+      "mean_spearman": 1.0,
+      "mean_sign_agree": 1.0,
+      "mean_mae": 4.393548603635426e-16,
+      "max_mae": 2.8727020762175925e-15,
+      "mean_topk_agree": 1.0,
+      "runtime_ms": 1601.0016999998697,
+      "gate_cosine": true,
+      "gate_spearman": true,
+      "gate_sign_agree": true,
+      "all_gates_pass": true
+    }
+  ],
+  "note": "Gate failures recorded exactly as observed \u2014 seeds never removed or settings adjusted after inspecting outcomes (DR-006A \u00a73)."
+}
