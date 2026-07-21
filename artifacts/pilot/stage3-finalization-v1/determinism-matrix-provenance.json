@@ -3,7 +3,7 @@
   "purpose": "DR-006B supplementary provenance for determinism-matrix.json",
   "source_artifact": "determinism-matrix.json",
   "source_artifact_sha256": "720599996c0cbdaf81d3d20f1cab7a266985256473d415a58accba21ca25dc41",
-  "note": "Existing determinism-matrix.json is append-only and was not modified. Missing provenance fields added per DR-006B. Background hashes updated to full 64-char SHA-256 per DR-006C.",
+  "note": "Existing determinism-matrix.json is append-only and was not modified. Missing provenance fields added per DR-006B. Background hashes updated to full 64-char SHA-256 per DR-006C. LIME background hash corrected from n=100 to n=200 per DR-006D (source constant N_BACKGROUND_LIME=200 confirmed in determinism_matrix.py line 63).",
   "cells": [
     {
       "cell": "rf+kernelshap",
@@ -37,7 +37,7 @@
       "feature_order_validated": true,
       "output_shape": "(20, 8)",
       "background_n": 200,
-      "background_hash_seed0": "d44709b98d4e8014b48d0c6cc5aea0afb61d828929def15a2b69205774a989be",
+      "background_hash_seed0": "b24b268a16efedd3a540454f0b5467075f558e12bfd103825eaf24e2b13411c3",
       "model_seed": "model trained with random_state=seed",
       "explainer_seed": "LimeTabularExplainer random_state=seed",
       "numerical_tolerance_same_seed": 0.0,
@@ -51,7 +51,7 @@
       "schema_valid": true,
       "cell_status": "PASS",
       "background_hash_algorithm": "sha256",
-      "background_hash_note": "SHA-256 of X_train[:100].tobytes() at seed=0 (numpy.random.default_rng(0))"
+      "background_hash_note": "SHA-256 of X_train[:200].tobytes() at seed=0 (numpy.random.default_rng(0))"
     },
     {
       "cell": "xgb+kernelshap",
@@ -85,7 +85,7 @@
       "feature_order_validated": true,
       "output_shape": "(20, 8)",
       "background_n": 200,
-      "background_hash_seed0": "d44709b98d4e8014b48d0c6cc5aea0afb61d828929def15a2b69205774a989be",
+      "background_hash_seed0": "b24b268a16efedd3a540454f0b5467075f558e12bfd103825eaf24e2b13411c3",
       "model_seed": "XGBRegressor random_state=seed",
       "explainer_seed": "LimeTabularExplainer random_state=seed",
       "numerical_tolerance_same_seed": 0.0,
@@ -99,7 +99,7 @@
       "schema_valid": true,
       "cell_status": "PASS",
       "background_hash_algorithm": "sha256",
-      "background_hash_note": "SHA-256 of X_train[:100].tobytes() at seed=0 (numpy.random.default_rng(0))"
+      "background_hash_note": "SHA-256 of X_train[:200].tobytes() at seed=0 (numpy.random.default_rng(0))"
     }
   ]
 }

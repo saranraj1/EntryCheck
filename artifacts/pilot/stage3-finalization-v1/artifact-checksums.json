@@ -5,8 +5,8 @@
   "hashing_algorithm": "sha256",
   "files": {
     "determinism-matrix-provenance.json": {
-      "sha256": "2a2ae51322bf9da76f75a337ddab0f568d4ac4174dd26c24b83cc9888236c215",
-      "size_bytes": 5376
+      "sha256": "652b54bd7392178595d8a90a1ac65c7b05f790853786c68972a4829a6ebaaf86",
+      "size_bytes": 5523
     },
     "determinism-matrix.json": {
       "sha256": "720599996c0cbdaf81d3d20f1cab7a266985256473d415a58accba21ca25dc41",
