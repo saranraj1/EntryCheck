@@ -1,33 +1,42 @@
 """
-ExplainCheck — abstract base class for all metric implementations.
+ExplainCheck — abstract base class for all metric implementations (Option B+, DR-006A §1).
 
 Every metric must declare:
+  - family:    MetricFamily enum value
+  - name:      str
   - direction: "higher_is_better" or "lower_is_better"
-  - range: (min, max) or (None, None) if unbounded
-  - requires_prediction_preservation: bool
-  - assumptions: list of strings
-  - parameters: dict of parameter names and values
-  - aggregation_method: str
+  - value_range, requires_prediction_preservation, aggregation_method
 
-Every metric must implement compute() returning MetricResult objects.
+Every metric must implement compute(context: ContextT) returning MetricResult objects.
+
+The Generic[ContextT] parameter removes the need for # type: ignore[override] on
+subclass compute() methods — each subclass declares its specific context type,
+and mypy verifies that callers pass the correct context.
 """
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 from explaincheck.contracts import (
-    AttributionRecord,
     FailureRecord,
     MetricFamily,
     MetricResult,
-    ModelFamily,
 )
+from explaincheck.metrics.contexts import BaseMetricContext
+
+ContextT = TypeVar("ContextT", bound=BaseMetricContext)
 
 
-class BaseMetric(ABC):
-    """Abstract interface for all metric implementations."""
+class BaseMetric(ABC, Generic[ContextT]):
+    """
+    Abstract interface for all metric implementations.
+
+    Type parameter ContextT is the specific BaseMetricContext subclass
+    that this metric requires.  Callers must pass the correct context type;
+    mypy enforces this without any type: ignore suppression.
+    """
 
     family: MetricFamily
     name: str
@@ -47,38 +56,34 @@ class BaseMetric(ABC):
         """All parameters that affect the metric value."""
 
     @abstractmethod
-    def compute(
-        self,
-        attributions: list[AttributionRecord],
-        *,
-        run_id: str,
-        protocol_version: str,
-        dataset: str,
-        dataset_version: str,
-        split_hash: str,
-        model_family: ModelFamily,
-        model_hash: str,
-        seed: int,
-        stressor: str | None = None,
-        stress_level: str | None = None,
-        subgroup: str | None = None,
-        subgroup_value: str | None = None,
-        **kwargs: Any,
-    ) -> list[MetricResult | FailureRecord]:
+    def compute(self, context: ContextT) -> list[MetricResult | FailureRecord]:
         """
-        Compute the metric over a list of AttributionRecord objects.
+        Compute the metric using the typed context.
 
         Returns one MetricResult per sample (or per stressor level).
         Failures are returned as FailureRecord — never silently discarded.
+
+        The context carries all provenance fields and scientific inputs.
+        Subclasses declare their specific ContextT and mypy verifies compatibility.
         """
 
-    def validate_attributions(self, attributions: list[AttributionRecord]) -> None:
+    def validate_context(self, context: BaseMetricContext) -> None:
         """
-        Raise ValueError if attributions are invalid for this metric.
+        Raise ValueError if the context is invalid for this metric.
         Called at the start of compute() by default.
+
+        Context-level validation (non-empty attributions, valid shapes) is
+        already performed by Pydantic at context construction time.
+        Metric-specific cross-field validation goes here.
+        """
+        if self.requires_prediction_preservation:
+            pass
+
+    def validate_attributions(self, attributions: list) -> None:  # noqa: ANN401
+        """
+        Legacy validation helper for subclasses that pass attributions directly.
+        Kept for backward compatibility with Stage 4 metrics pending migration.
+        Raises ValueError if attributions list is empty.
         """
         if not attributions:
             raise ValueError(f"{self.name}: received empty attribution list.")
-        if self.requires_prediction_preservation:
-            # Subclasses must filter for prediction-preserved pairs.
-            pass

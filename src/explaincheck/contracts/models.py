@@ -181,6 +181,9 @@ class MetricResult(BaseModel):
     )
     n_perturbations_total: int | None = None
     n_perturbations_rejected: int | None = None
+    prediction_preservation_rate: float | None = (
+        None  # fraction of pairs passing prediction preservation filter
+    )
 
     # Result
     estimate: float

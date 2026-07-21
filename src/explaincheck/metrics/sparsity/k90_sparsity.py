@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import time
 from typing import Any
+from typing import Any as _Any
 
 import numpy as np
 
@@ -74,7 +75,7 @@ def k90_sparsity(attribution: np.ndarray, threshold: float = 0.90) -> int:
     return int(passing[0]) + 1  # 1-indexed count
 
 
-class K90Sparsity(BaseMetric):
+class K90Sparsity(BaseMetric[_Any]):
     """
     k90 Sparsity metric.
 
@@ -105,7 +106,7 @@ class K90Sparsity(BaseMetric):
     def parameters(self) -> dict[str, Any]:
         return {"threshold": self._threshold}
 
-    def compute(
+    def compute(  # type: ignore[override]  # Stage 4 quarantine: pending StabilityContext migration
         self,
         attributions: list[AttributionRecord],
         *,

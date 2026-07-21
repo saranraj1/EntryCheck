@@ -1,12 +1,12 @@
 """
-ExplainCheck — Prediction-conditioned Top-k Jaccard stability metric.
+ExplainCheck â€” Prediction-conditioned Top-k Jaccard stability metric.
 
 Migrated from Phase 0 (run_phase0.py) without changing scientific definitions.
 
 Scientific definition (frozen from Phase 0):
     For each sample, generate a Gaussian-perturbed copy (sigma=0.05).
     Discard pairs where the predicted class changes (prediction preservation).
-    Stability = |top_k(A) ∩ top_k(A')| / |top_k(A) ∪ top_k(A')|
+    Stability = |top_k(A) âˆ© top_k(A')| / |top_k(A) âˆª top_k(A')|
     where A is the original attribution and A' is the attribution on perturbed input.
 
 Prediction preservation is MANDATORY per protocol-v1.yaml.
@@ -31,6 +31,7 @@ from explaincheck.contracts import (
     RunStatus,
 )
 from explaincheck.metrics.base import BaseMetric
+from explaincheck.metrics.contexts import StabilityContext
 from explaincheck.provenance import utc_now_iso
 
 
@@ -53,7 +54,7 @@ def jaccard(a: np.ndarray, b: np.ndarray, k: int) -> float:
     return len(sa & sb) / len(sa | sb)
 
 
-class TopKJaccardStability(BaseMetric):
+class TopKJaccardStability(BaseMetric[StabilityContext]):
     """
     Prediction-conditioned Top-k Jaccard stability.
 
@@ -91,48 +92,27 @@ class TopKJaccardStability(BaseMetric):
             "aggregation": "mean_over_preserved_pairs",
         }
 
-    def compute(  # type: ignore[override]
-        self,
-        attributions: list[AttributionRecord],
-        *,
-        run_id: str,
-        protocol_version: str,
-        dataset: str,
-        dataset_version: str,
-        split_hash: str,
-        model_family: ModelFamily,
-        model_hash: str,
-        seed: int,
-        weights: np.ndarray,
-        bias: float,
-        baseline: np.ndarray,
-        X: np.ndarray,
-        explainer_instance: Any | None = None,
-        stressor: str | None = None,
-        stress_level: str | None = None,
-        subgroup: str | None = None,
-        subgroup_value: str | None = None,
-        **kwargs: Any,
-    ) -> list[MetricResult | FailureRecord]:
+    def compute(self, context: StabilityContext) -> list[MetricResult | FailureRecord]:
         """
         Compute Top-k Jaccard stability for each sample.
 
         Uses seed + 9000 for the perturbation RNG (identical to Phase 0).
         """
-        self.validate_attributions(attributions)
+        self.validate_context(context)
+        attributions: list[AttributionRecord] = context.attributions
 
-        rng = np.random.default_rng(seed + 9000)
+        rng = np.random.default_rng(context.seed + 9000)
         n = len(attributions)
-        Xp = X[:n] + rng.normal(0, self.sigma, size=X[:n].shape)
+        Xp = context.X[:n] + rng.normal(0, context.sigma, size=context.X[:n].shape)
 
         # Predictions on original and perturbed inputs
-        pred_orig = (_sigmoid(X[:n] @ weights + bias) >= 0.5).astype(int)
-        pred_pert = (_sigmoid(Xp @ weights + bias) >= 0.5).astype(int)
+        pred_orig = (_sigmoid(context.X[:n] @ context.weights + context.bias) >= 0.5).astype(int)
+        pred_pert = (_sigmoid(Xp @ context.weights + context.bias) >= 0.5).astype(int)
         preserved_mask = pred_orig == pred_pert
 
         n_total = len(attributions)
         n_rejected = int((~preserved_mask).sum())
-        preservation_rate = float(preserved_mask.mean())  # noqa: F841 – reserved for future run summary
+        prediction_preservation_rate = float(preserved_mask.mean())
 
         results: list[MetricResult | FailureRecord] = []
 
@@ -144,11 +124,10 @@ class TopKJaccardStability(BaseMetric):
                 # Compute perturbed attribution using the same explainer logic
                 # For exact_linear: A' = w * (Xp - baseline)
                 if rec.explainer == ExplainerName.EXACT_LINEAR:
-                    attr_pert = (Xp[i] - baseline) * weights
+                    attr_pert = (Xp[i] - context.baseline) * context.weights
                 elif rec.explainer == ExplainerName.RANDOMIZED_NEGATIVE_CONTROL:
-                    # Perturbed exact then re-shuffle with same seed logic
-                    exact_pert = (Xp[i] - baseline) * weights
-                    rng2 = np.random.default_rng(seed + 1)
+                    exact_pert = (Xp[i] - context.baseline) * context.weights
+                    rng2 = np.random.default_rng(context.seed + 1)
                     attr_pert = exact_pert[rng2.permutation(exact_pert.size)]
                 else:
                     raise ValueError(
@@ -160,27 +139,28 @@ class TopKJaccardStability(BaseMetric):
                     rt = (time.perf_counter() - t0) * 1000
                     results.append(
                         MetricResult(
-                            run_id=run_id,
-                            protocol_version=protocol_version,
-                            dataset=dataset,
-                            dataset_version=dataset_version,
-                            split_hash=split_hash,
-                            model_family=model_family,
-                            model_hash=model_hash,
+                            run_id=context.run_id,
+                            protocol_version=context.protocol_version,
+                            dataset=context.dataset,
+                            dataset_version=context.dataset_version,
+                            split_hash=context.split_hash,
+                            model_family=ModelFamily(context.model_family),
+                            model_hash=context.model_hash,
                             explainer=rec.explainer,
                             explainer_version=rec.explainer_version,
-                            seed=seed,
+                            seed=context.seed,
                             sample_id=rec.sample_id,
                             metric_family=self.family,
                             metric_name=self.name,
                             metric_k=self.k,
-                            stressor=stressor,
-                            stress_level=stress_level,
-                            subgroup=subgroup,
-                            subgroup_value=subgroup_value,
+                            stressor=context.stressor,
+                            stress_level=context.stress_level,
+                            subgroup=context.subgroup,
+                            subgroup_value=context.subgroup_value,
                             prediction_preservation_status=PredictionPreservationStatus.NOT_PRESERVED,
                             n_perturbations_total=n_total,
                             n_perturbations_rejected=n_rejected,
+                            prediction_preservation_rate=prediction_preservation_rate,
                             estimate=float("nan"),
                             runtime_ms=rt,
                             status=RunStatus.EXCLUDED,
@@ -193,27 +173,28 @@ class TopKJaccardStability(BaseMetric):
                 rt = (time.perf_counter() - t0) * 1000
                 results.append(
                     MetricResult(
-                        run_id=run_id,
-                        protocol_version=protocol_version,
-                        dataset=dataset,
-                        dataset_version=dataset_version,
-                        split_hash=split_hash,
-                        model_family=model_family,
-                        model_hash=model_hash,
+                        run_id=context.run_id,
+                        protocol_version=context.protocol_version,
+                        dataset=context.dataset,
+                        dataset_version=context.dataset_version,
+                        split_hash=context.split_hash,
+                        model_family=ModelFamily(context.model_family),
+                        model_hash=context.model_hash,
                         explainer=rec.explainer,
                         explainer_version=rec.explainer_version,
-                        seed=seed,
+                        seed=context.seed,
                         sample_id=rec.sample_id,
                         metric_family=self.family,
                         metric_name=self.name,
                         metric_k=self.k,
-                        stressor=stressor,
-                        stress_level=stress_level,
-                        subgroup=subgroup,
-                        subgroup_value=subgroup_value,
+                        stressor=context.stressor,
+                        stress_level=context.stress_level,
+                        subgroup=context.subgroup,
+                        subgroup_value=context.subgroup_value,
                         prediction_preservation_status=PredictionPreservationStatus.PRESERVED,
                         n_perturbations_total=n_total,
                         n_perturbations_rejected=n_rejected,
+                        prediction_preservation_rate=prediction_preservation_rate,
                         estimate=score,
                         runtime_ms=rt,
                         status=RunStatus.SUCCESS,
@@ -224,13 +205,13 @@ class TopKJaccardStability(BaseMetric):
                 rt = (time.perf_counter() - t0) * 1000
                 results.append(
                     FailureRecord(
-                        run_id=run_id,
+                        run_id=context.run_id,
                         timestamp=utc_now_iso(),
-                        dataset=dataset,
-                        model_family=model_family,
+                        dataset=context.dataset,
+                        model_family=ModelFamily(context.model_family),
                         explainer=rec.explainer,
                         metric_name=self.name,
-                        seed=seed,
+                        seed=context.seed,
                         failure_reason=str(exc),
                         is_deterministic=True,
                         excluded=False,

@@ -16,6 +16,7 @@ import tracemalloc
 from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
+from typing import Any as _Any
 
 from explaincheck.contracts import (
     AttributionRecord,
@@ -53,7 +54,7 @@ def timer_and_memory() -> Generator[dict[str, float], None, None]:
         result["peak_mb"] = round(peak / 1024.0 / 1024.0, 4)
 
 
-class RuntimeMetric(BaseMetric):
+class RuntimeMetric(BaseMetric[_Any]):
     """
     Explanation runtime (wall-clock ms) extracted from AttributionRecord.runtime_ms.
 
@@ -78,7 +79,7 @@ class RuntimeMetric(BaseMetric):
     def parameters(self) -> dict[str, Any]:
         return {}
 
-    def compute(
+    def compute(  # type: ignore[override]  # Stage 4 quarantine: pending context migration
         self,
         attributions: list[AttributionRecord],
         *,

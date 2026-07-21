@@ -12,6 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 import explaincheck
 from explaincheck.contracts import (
@@ -118,14 +119,14 @@ def test_dataset_record_immutable() -> None:
         target_column="y",
         task="binary_classification",
     )
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         record.name = "mutated"  # type: ignore[misc]
 
 
 @pytest.mark.unit
 def test_failure_record_requires_reason() -> None:
     """FailureRecord must always carry a failure_reason."""
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         FailureRecord(  # type: ignore[call-arg]
             run_id="ec-test",
             timestamp="2026-07-14T00:00:00Z",

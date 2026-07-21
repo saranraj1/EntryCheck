@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import time
 from typing import Any
+from typing import Any as _Any
 
 import numpy as np
 from scipy.stats import spearmanr
@@ -67,7 +68,7 @@ def spearman_pair(a: np.ndarray, b: np.ndarray) -> float:
     return float(rho) if np.isfinite(rho) else float("nan")
 
 
-class SpearmanStability(BaseMetric):
+class SpearmanStability(BaseMetric[_Any]):
     """
     Prediction-conditioned Spearman rank correlation stability.
 
@@ -110,7 +111,7 @@ class SpearmanStability(BaseMetric):
             "n_perturbations": self._n_perturbations,
         }
 
-    def compute(  # type: ignore[override]
+    def compute(  # type: ignore[override]  # Stage 4 quarantine: pending context migration
         self,
         attributions: list[AttributionRecord],
         *,

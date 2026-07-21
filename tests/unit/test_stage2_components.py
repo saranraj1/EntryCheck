@@ -10,6 +10,7 @@ import math
 
 import numpy as np
 import pytest
+from pydantic import ValidationError
 
 from explaincheck.contracts import (
     AttributionRecord,
@@ -377,7 +378,7 @@ def test_stability_negative_control_lower_than_exact() -> None:
 def test_fidelity_raises_on_nan_attribution() -> None:
     from explaincheck.contracts import AttributionRecord, DataSplit
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         AttributionRecord(
             run_id="t",
             protocol_version="1.0.0",

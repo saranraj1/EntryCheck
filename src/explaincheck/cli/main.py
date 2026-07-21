@@ -192,6 +192,97 @@ def validate_artifacts(artifact_dir: str) -> None:
 # ---------------------------------------------------------------------------
 
 
+@cli.command("validate-stage3")
+@click.option(
+    "--seeds",
+    default="0,1,2,3,4",
+    help="Comma-separated seed list for multi-seed validation (default: 0,1,2,3,4).",
+)
+@click.option(
+    "--output-dir",
+    default="artifacts/pilot/stage3-finalization-v1",
+    type=click.Path(),
+    help="Output directory for finalization artifacts.",
+)
+@click.option(
+    "--overwrite",
+    is_flag=True,
+    default=False,
+    hidden=True,  # dev-only; must NOT be used for frozen confirmatory runs
+    help="[DEV ONLY] Allow overwriting existing artifact directory.",
+)
+def validate_stage3(seeds: str, output_dir: str, overwrite: bool) -> None:
+    """
+    Run Stage 3 finalization validation (DR-006A §7).
+
+    Executes multi-seed KernelSHAP and LIME validation and the compatibility
+    determinism matrix, then writes canonical artifacts to --output-dir.
+
+    Seeds: specified as comma-separated integers (default: 0,1,2,3,4).
+
+    This command refuses to overwrite a non-empty output directory unless
+    --overwrite is explicitly passed. That flag must never be used for
+    frozen confirmatory runs.
+    """
+    import subprocess
+
+    seed_list = [int(s.strip()) for s in seeds.split(",")]
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    # Guard: refuse to overwrite non-empty frozen artifact directory
+    existing = list(out.iterdir())
+    if existing and not overwrite:
+        click.echo(
+            f"[ERROR] Output directory '{out}' is non-empty "
+            f"({len(existing)} file(s) found).\n"
+            "This command will not overwrite frozen artifacts.\n"
+            "Move or rename existing files, or use --overwrite [DEV ONLY].",
+            err=True,
+        )
+        sys.exit(1)
+
+    click.echo(f"validate-stage3: seeds={seed_list}, output-dir={out}")
+    click.echo()
+
+    scripts = [
+        ("KernelSHAP multi-seed", "scripts/validation/stage3_kernelshap_multiseed.py"),
+        ("LIME multi-seed", "scripts/validation/stage3_lime_multiseed.py"),
+        ("Determinism matrix", "scripts/validation/stage3_determinism_matrix.py"),
+    ]
+
+    results: dict[str, bool] = {}
+    seeds_arg = [str(s) for s in seed_list]
+
+    for label, script_path in scripts:
+        click.echo(f"--- {label} ---")
+        cmd = [
+            sys.executable,
+            script_path,
+            "--seeds",
+            *seeds_arg,
+            "--output-dir",
+            str(out),
+        ]
+        ret = subprocess.run(cmd, capture_output=False)
+        # exit 2 = gates failed (script ran correctly); exit 1 = error
+        results[label] = ret.returncode in (0, 2)
+        click.echo()
+
+    click.echo("=== validate-stage3 summary ===")
+    all_ran = all(results.values())
+    for label, ran in results.items():
+        status = "COMPLETE" if ran else "ERROR"
+        click.echo(f"  {label}: {status}")
+    click.echo()
+
+    if all_ran:
+        click.echo("All validation scripts completed. Review JSON artifacts for gate results.")
+    else:
+        click.echo("[WARNING] One or more scripts errored -- check output above.", err=True)
+        sys.exit(1)
+
+
 @cli.command("env-snapshot")
 @click.option(
     "--out", default=None, type=click.Path(), help="Write JSON to file instead of stdout."

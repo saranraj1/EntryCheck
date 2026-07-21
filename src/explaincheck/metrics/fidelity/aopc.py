@@ -1,5 +1,5 @@
 """
-ExplainCheck — Deletion Fidelity AOPC metric.
+ExplainCheck â€” Deletion Fidelity AOPC metric.
 
 Migrated from Phase 0 (run_phase0.py) without changing scientific definitions.
 
@@ -30,6 +30,7 @@ from explaincheck.contracts import (
     RunStatus,
 )
 from explaincheck.metrics.base import BaseMetric
+from explaincheck.metrics.contexts import AOPCContext
 from explaincheck.provenance import utc_now_iso
 
 
@@ -62,7 +63,7 @@ def deletion_fidelity_aopc_single(
     return float(np.mean(drops))
 
 
-class DeletionFidelityAOPC(BaseMetric):
+class AOPCMetric(BaseMetric[AOPCContext]):
     """
     Mean cumulative absolute logit change after sequential feature deletion.
 
@@ -98,29 +99,10 @@ class DeletionFidelityAOPC(BaseMetric):
             "aggregation": "mean_over_k_and_samples",
         }
 
-    def compute(  # type: ignore[override]
-        self,
-        attributions: list[AttributionRecord],
-        *,
-        run_id: str,
-        protocol_version: str,
-        dataset: str,
-        dataset_version: str,
-        split_hash: str,
-        model_family: ModelFamily,
-        model_hash: str,
-        seed: int,
-        weights: np.ndarray,
-        bias: float,
-        baseline: np.ndarray,
-        X: np.ndarray,
-        stressor: str | None = None,
-        stress_level: str | None = None,
-        subgroup: str | None = None,
-        subgroup_value: str | None = None,
-        **kwargs: Any,
-    ) -> list[MetricResult | FailureRecord]:
-        self.validate_attributions(attributions)
+    def compute(self, context: AOPCContext) -> list[MetricResult | FailureRecord]:
+        """Compute deletion-fidelity AOPC over all samples in context."""
+        self.validate_context(context)
+        attributions: list[AttributionRecord] = context.attributions
         results: list[MetricResult | FailureRecord] = []
 
         for i, rec in enumerate(attributions):
@@ -130,29 +112,29 @@ class DeletionFidelityAOPC(BaseMetric):
                 if any(not math.isfinite(v) for v in rec.attribution):
                     raise ValueError("Attribution contains NaN or Inf.")
                 score = deletion_fidelity_aopc_single(
-                    X[i], attr, weights, bias, baseline, self.kmax
+                    context.X[i], attr, context.weights, context.bias, context.baseline, self.kmax
                 )
                 rt = (time.perf_counter() - t0) * 1000
                 results.append(
                     MetricResult(
-                        run_id=run_id,
-                        protocol_version=protocol_version,
-                        dataset=dataset,
-                        dataset_version=dataset_version,
-                        split_hash=split_hash,
-                        model_family=model_family,
-                        model_hash=model_hash,
+                        run_id=context.run_id,
+                        protocol_version=context.protocol_version,
+                        dataset=context.dataset,
+                        dataset_version=context.dataset_version,
+                        split_hash=context.split_hash,
+                        model_family=ModelFamily(context.model_family),
+                        model_hash=context.model_hash,
                         explainer=rec.explainer,
                         explainer_version=rec.explainer_version,
-                        seed=seed,
+                        seed=context.seed,
                         sample_id=rec.sample_id,
                         metric_family=self.family,
                         metric_name=self.name,
                         metric_k=self.kmax,
-                        stressor=stressor,
-                        stress_level=stress_level,
-                        subgroup=subgroup,
-                        subgroup_value=subgroup_value,
+                        stressor=context.stressor,
+                        stress_level=context.stress_level,
+                        subgroup=context.subgroup,
+                        subgroup_value=context.subgroup_value,
                         prediction_preservation_status=PredictionPreservationStatus.NOT_APPLICABLE,
                         estimate=score,
                         runtime_ms=rt,
@@ -163,13 +145,13 @@ class DeletionFidelityAOPC(BaseMetric):
                 rt = (time.perf_counter() - t0) * 1000
                 results.append(
                     FailureRecord(
-                        run_id=run_id,
+                        run_id=context.run_id,
                         timestamp=utc_now_iso(),
-                        dataset=dataset,
-                        model_family=model_family,
+                        dataset=context.dataset,
+                        model_family=ModelFamily(context.model_family),
                         explainer=rec.explainer,
                         metric_name=self.name,
-                        seed=seed,
+                        seed=context.seed,
                         failure_reason=str(exc),
                         is_deterministic=True,
                         excluded=False,

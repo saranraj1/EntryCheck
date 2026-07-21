@@ -17,6 +17,7 @@ import math
 
 import numpy as np
 import pytest
+from pydantic import ValidationError
 
 from explaincheck.contracts import ModelFamily
 from explaincheck.contracts.enums import ExplainerName, ExplainerType
@@ -75,7 +76,7 @@ def sklearn_lr_fitted(synth_data):
 @pytest.mark.unit
 def test_explanation_batch_rejects_nan():
     """Batch must be rejected if attributions contain NaN."""
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         ExplanationBatch(
             run_id="t",
             protocol_version="1.0.0",
@@ -107,7 +108,7 @@ def test_explanation_batch_rejects_nan():
 @pytest.mark.unit
 def test_explanation_batch_rejects_width_mismatch():
     """Batch rejected if attribution width != feature_names width."""
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         ExplanationBatch(
             run_id="t",
             protocol_version="1.0.0",
@@ -139,7 +140,7 @@ def test_explanation_batch_rejects_width_mismatch():
 @pytest.mark.unit
 def test_explanation_batch_rejects_empty_output_space():
     """Batch rejected if output_space is empty."""
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         ExplanationBatch(
             run_id="t",
             protocol_version="1.0.0",
