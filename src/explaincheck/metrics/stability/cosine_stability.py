@@ -10,7 +10,7 @@ Scientific definition:
     When one is zero and the other is not, similarity = 0.0.
 
 Direction: higher = more stable.
-Range: [-1, 1] (in practice ≥ 0 for coherent explainers).
+Range: [-1, 1] (in practice >= 0 for coherent explainers).
 Prediction preservation: mandatory per protocol-v1.yaml.
 """
 
@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import time
 from typing import Any
-from typing import Any as _Any
 
 import numpy as np
 
@@ -32,6 +31,7 @@ from explaincheck.contracts import (
     RunStatus,
 )
 from explaincheck.metrics.base import BaseMetric
+from explaincheck.metrics.contexts import PairwiseStabilityContext
 from explaincheck.provenance import utc_now_iso
 
 
@@ -66,11 +66,12 @@ def cosine_similarity_pair(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(a, b) / (norm_a * norm_b))
 
 
-class CosineStability(BaseMetric[_Any]):
+class CosineStability(BaseMetric[PairwiseStabilityContext]):
     """
     Prediction-conditioned cosine similarity stability.
 
     Direction: higher = more stable (closer attribution vectors across perturbations).
+    Migrated to Option B+ typed context interface (DR-008).
     """
 
     family = MetricFamily.STABILITY
@@ -108,27 +109,9 @@ class CosineStability(BaseMetric[_Any]):
             "n_perturbations": self._n_perturbations,
         }
 
-    def compute(  # type: ignore[override]  # Stage 4 quarantine: pending context migration
+    def compute(
         self,
-        attributions: list[AttributionRecord],
-        *,
-        run_id: str,
-        protocol_version: str,
-        dataset: str,
-        dataset_version: str,
-        split_hash: str,
-        model_family: ModelFamily,
-        model_hash: str,
-        seed: int,
-        stressor: str | None = None,
-        stress_level: str | None = None,
-        subgroup: str | None = None,
-        subgroup_value: str | None = None,
-        weights: np.ndarray,
-        bias: float,
-        baseline: np.ndarray,
-        X: np.ndarray,
-        **kwargs: Any,
+        context: PairwiseStabilityContext,
     ) -> list[MetricResult | FailureRecord]:
         """
         Compute cosine stability using analytic attribution pairs (exact_linear).
@@ -136,7 +119,23 @@ class CosineStability(BaseMetric[_Any]):
         For SHAP/LIME explainers the general stability runner is required.
         This implementation follows the same pattern as TopKJaccardStability.
         """
-        self.validate_attributions(attributions)
+        attributions: tuple[AttributionRecord, ...] = context.attributions
+        run_id = context.run_id
+        protocol_version = context.protocol_version
+        dataset = context.dataset
+        dataset_version = context.dataset_version
+        split_hash = context.split_hash
+        model_family = ModelFamily(context.model_family)
+        model_hash = context.model_hash
+        seed = context.seed
+        stressor = context.stressor
+        stress_level = context.stress_level
+        subgroup = context.subgroup
+        subgroup_value = context.subgroup_value
+        weights = context.weights
+        bias = context.bias
+        baseline = context.baseline
+        X = context.X
 
         from explaincheck.contracts import ExplainerName
         from explaincheck.metrics.stability.top_k_jaccard import _sigmoid

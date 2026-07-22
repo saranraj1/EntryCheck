@@ -91,3 +91,29 @@ to `src/explaincheck/validation/` must be reviewed individually.
 ---
 
 *Proposed by AI assistant Antigravity. Requires Saranraj U countersignature.*
+
+---
+
+## DR-007 ratification note (appended 2026-07-22)
+
+This coverage exclusion was introduced after a CI coverage failure at commit
+`eb658e6c62aec1046c187a190d6f088e5eea071a`, not prospectively before the failure
+occurred. The policy was subsequently reviewed, justified with the structural
+arguments above, and ratified as part of DR-007 (2026-07-22, Saranraj U).
+
+**Disclosure of origin:** The exclusion was reactive, not pre-planned.
+The ratified policy text above reflects the retrospective justification
+reviewed and approved by Saranraj U at Stage 3 closure.
+
+---
+
+## Stage 4 applicability (DR-008 §1)
+
+Per DR-008, this exclusion does **not** automatically extend to Stage 4 modules.
+Stage 4 metrics migrated to the Option B+ typed-context interface
+(`K90Sparsity`, `RuntimeMetric`, `CosineStability`, `SpearmanStability`)
+are library modules imported by production code and must remain in the
+coverage denominator. Their coverage will be assessed after the Stage 4
+infrastructure migration is validated.
+
+*Appended by AI assistant Antigravity per DR-008 §1 requirement.*

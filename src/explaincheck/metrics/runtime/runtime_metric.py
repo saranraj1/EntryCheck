@@ -16,7 +16,6 @@ import tracemalloc
 from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
-from typing import Any as _Any
 
 from explaincheck.contracts import (
     AttributionRecord,
@@ -28,6 +27,7 @@ from explaincheck.contracts import (
     RunStatus,
 )
 from explaincheck.metrics.base import BaseMetric
+from explaincheck.metrics.contexts import RuntimeContext
 from explaincheck.provenance import utc_now_iso
 
 
@@ -54,11 +54,15 @@ def timer_and_memory() -> Generator[dict[str, float], None, None]:
         result["peak_mb"] = round(peak / 1024.0 / 1024.0, 4)
 
 
-class RuntimeMetric(BaseMetric[_Any]):
+class RuntimeMetric(BaseMetric[RuntimeContext]):
     """
     Explanation runtime (wall-clock ms) extracted from AttributionRecord.runtime_ms.
 
     Direction: lower = faster.
+    Migrated to Option B+ typed context interface (DR-008).
+
+    Missing, negative or non-finite runtime_ms values produce FailureRecord outputs
+    rather than raising exceptions, preserving all established edge-case behaviour.
     """
 
     family = MetricFamily.RUNTIME
@@ -79,25 +83,29 @@ class RuntimeMetric(BaseMetric[_Any]):
     def parameters(self) -> dict[str, Any]:
         return {}
 
-    def compute(  # type: ignore[override]  # Stage 4 quarantine: pending context migration
+    def compute(
         self,
-        attributions: list[AttributionRecord],
-        *,
-        run_id: str,
-        protocol_version: str,
-        dataset: str,
-        dataset_version: str,
-        split_hash: str,
-        model_family: ModelFamily,
-        model_hash: str,
-        seed: int,
-        stressor: str | None = None,
-        stress_level: str | None = None,
-        subgroup: str | None = None,
-        subgroup_value: str | None = None,
-        **kwargs: Any,
+        context: RuntimeContext,
     ) -> list[MetricResult | FailureRecord]:
-        self.validate_attributions(attributions)
+        """
+        Extract runtime_ms from each AttributionRecord in context.attributions.
+
+        Missing, negative or non-finite runtime_ms values produce FailureRecord outputs.
+        """
+        attributions: tuple[AttributionRecord, ...] = context.attributions
+        run_id = context.run_id
+        protocol_version = context.protocol_version
+        dataset = context.dataset
+        dataset_version = context.dataset_version
+        split_hash = context.split_hash
+        model_family = ModelFamily(context.model_family)
+        model_hash = context.model_hash
+        seed = context.seed
+        stressor = context.stressor
+        stress_level = context.stress_level
+        subgroup = context.subgroup
+        subgroup_value = context.subgroup_value
+
         results: list[MetricResult | FailureRecord] = []
         ts = utc_now_iso()
 

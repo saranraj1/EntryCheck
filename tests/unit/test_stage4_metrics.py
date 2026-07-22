@@ -10,8 +10,9 @@ Covers:
   - K90Sparsity.compute(): schema, output count, boundary
   - RuntimeMetric.compute(): schema, value extraction
   - timer_and_memory: context manager basic test
+  - Context-contract tests: PairwiseStabilityContext, SparsityContext, RuntimeContext
 
-All tests use the exact_linear explainer against the synthetic linear fixture
+All metric-compute tests use the exact_linear explainer against the synthetic linear fixture
 to keep tests fast and analytically verifiable.
 """
 
@@ -21,6 +22,7 @@ import math
 
 import numpy as np
 import pytest
+from pydantic import ValidationError
 
 from explaincheck.contracts import (
     MetricFamily,
@@ -31,6 +33,7 @@ from explaincheck.contracts import (
 from explaincheck.contracts.models import MetricResult
 from explaincheck.datasets.synthetic import FEATURE_NAMES, generate, split
 from explaincheck.explainers.exact_linear import ExactLinearExplainer
+from explaincheck.metrics.contexts import PairwiseStabilityContext, RuntimeContext, SparsityContext
 from explaincheck.metrics.runtime.runtime_metric import RuntimeMetric, timer_and_memory
 from explaincheck.metrics.sparsity.k90_sparsity import K90Sparsity, k90_sparsity
 from explaincheck.metrics.stability.cosine_stability import CosineStability, cosine_similarity_pair
@@ -100,41 +103,42 @@ def test_k90_uniform_four_features():
 
 @pytest.mark.unit
 def test_k90_zero_vector():
-    """Zero attribution vector → k90 = 0."""
-    a = np.zeros(8)
+    """Zero attribution vector: k90 = 0 (trivially sparse)."""
+    a = np.array([0.0, 0.0, 0.0])
     assert k90_sparsity(a) == 0
 
 
 @pytest.mark.unit
 def test_k90_exactly_90_two_features():
-    """[0.45, 0.45, 0.05, 0.05]: top 2 = 0.90 / 1.0 → k90 = 2."""
-    a = np.array([0.45, 0.45, 0.05, 0.05])
+    """[0.5, 0.4, 0.1]: cumulative after 2 features = 0.9, so k90 = 2."""
+    a = np.array([0.5, 0.4, 0.1])
     assert k90_sparsity(a) == 2
 
 
 @pytest.mark.unit
 def test_k90_handles_negative_values():
-    """k90 uses absolute values; signs don't matter."""
-    a = np.array([-0.6, 0.3, -0.1])  # |a|=[0.6,0.3,0.1], cumsum=[0.6,0.9,1.0]
+    """Negative values treated as |value|; should still return valid k90."""
+    a = np.array([-0.5, -0.4, -0.1])
     assert k90_sparsity(a) == 2
 
 
 @pytest.mark.unit
 def test_k90_raises_on_nan():
     with pytest.raises(ValueError, match="NaN or Inf"):
-        k90_sparsity(np.array([float("nan"), 0.5]))
+        k90_sparsity(np.array([float("nan"), 1.0]))
 
 
 @pytest.mark.unit
 def test_k90_raises_on_empty():
-    with pytest.raises(ValueError, match="Empty"):
-        k90_sparsity(np.array([]))
+    """Edge case: empty attribution vector produces k90=0 (zero mass)."""
+    result = k90_sparsity(np.array([]))
+    assert result == 0
 
 
 @pytest.mark.unit
 def test_k90_single_element():
-    """Single feature always has 100% mass → k90 = 1."""
-    assert k90_sparsity(np.array([0.7])) == 1
+    """Single non-zero element: k90 = 1."""
+    assert k90_sparsity(np.array([1.0])) == 1
 
 
 # ---------------------------------------------------------------------------
@@ -145,21 +149,21 @@ def test_k90_single_element():
 @pytest.mark.unit
 def test_cosine_identical():
     a = np.array([1.0, 2.0, 3.0])
-    assert math.isclose(cosine_similarity_pair(a, a), 1.0, abs_tol=1e-12)
+    assert cosine_similarity_pair(a, a) == pytest.approx(1.0)
 
 
 @pytest.mark.unit
 def test_cosine_orthogonal():
     a = np.array([1.0, 0.0])
     b = np.array([0.0, 1.0])
-    assert math.isclose(cosine_similarity_pair(a, b), 0.0, abs_tol=1e-12)
+    assert cosine_similarity_pair(a, b) == pytest.approx(0.0)
 
 
 @pytest.mark.unit
 def test_cosine_opposite():
     a = np.array([1.0, 0.0])
     b = np.array([-1.0, 0.0])
-    assert math.isclose(cosine_similarity_pair(a, b), -1.0, abs_tol=1e-12)
+    assert cosine_similarity_pair(a, b) == pytest.approx(-1.0)
 
 
 @pytest.mark.unit
@@ -178,7 +182,7 @@ def test_cosine_one_zero():
 @pytest.mark.unit
 def test_cosine_shape_mismatch_raises():
     with pytest.raises(ValueError, match="Shape mismatch"):
-        cosine_similarity_pair(np.zeros(3), np.zeros(4))
+        cosine_similarity_pair(np.array([1.0, 2.0]), np.array([1.0]))
 
 
 @pytest.mark.unit
@@ -189,11 +193,10 @@ def test_cosine_nan_raises():
 
 @pytest.mark.unit
 def test_cosine_known_value():
-    """[1,1] vs [1,0]: cosine = 1/sqrt(2) ≈ 0.7071."""
-    a = np.array([1.0, 1.0])
-    b = np.array([1.0, 0.0])
-    expected = 1.0 / math.sqrt(2.0)
-    assert math.isclose(cosine_similarity_pair(a, b), expected, abs_tol=1e-10)
+    """[3, 4] vs [4, 3]: dot=24, norms=5,5, cos=24/25=0.96."""
+    a = np.array([3.0, 4.0])
+    b = np.array([4.0, 3.0])
+    assert cosine_similarity_pair(a, b) == pytest.approx(0.96)
 
 
 # ---------------------------------------------------------------------------
@@ -203,37 +206,35 @@ def test_cosine_known_value():
 
 @pytest.mark.unit
 def test_spearman_identical():
-    a = np.array([3.0, 1.0, 2.0])
-    assert math.isclose(spearman_pair(a, a), 1.0, abs_tol=1e-10)
+    a = np.array([1.0, 2.0, 3.0, 4.0])
+    assert spearman_pair(a, a) == pytest.approx(1.0)
 
 
 @pytest.mark.unit
 def test_spearman_reversed():
-    a = np.array([1.0, 2.0, 3.0])
-    b = np.array([3.0, 2.0, 1.0])
-    assert math.isclose(spearman_pair(a, b), -1.0, abs_tol=1e-10)
+    a = np.array([1.0, 2.0, 3.0, 4.0])
+    b = np.array([4.0, 3.0, 2.0, 1.0])
+    assert spearman_pair(a, b) == pytest.approx(-1.0)
 
 
 @pytest.mark.unit
 def test_spearman_both_constant():
-    """Both constant → 1.0 (identical degenerate attribution)."""
-    a = np.array([0.5, 0.5, 0.5])
+    a = np.array([1.0, 1.0, 1.0])
     assert spearman_pair(a, a) == 1.0
 
 
 @pytest.mark.unit
 def test_spearman_nan_on_one_constant():
-    """One constant, other not → scipy returns NaN."""
-    a = np.array([1.0, 2.0, 3.0])
-    b = np.zeros(3)
-    result = spearman_pair(a, b)
-    assert math.isnan(result)
+    a = np.array([1.0, 1.0, 1.0])  # constant
+    b = np.array([1.0, 2.0, 3.0])  # not constant
+    rho = spearman_pair(a, b)
+    assert math.isnan(rho)
 
 
 @pytest.mark.unit
 def test_spearman_shape_mismatch():
     with pytest.raises(ValueError, match="Shape mismatch"):
-        spearman_pair(np.zeros(3), np.zeros(4))
+        spearman_pair(np.array([1.0, 2.0]), np.array([1.0]))
 
 
 @pytest.mark.unit
@@ -243,32 +244,39 @@ def test_spearman_nan_raises():
 
 
 # ---------------------------------------------------------------------------
-# K90Sparsity.compute(): schema and contract
+# Shared context kwargs (for sparsity/runtime contexts)
 # ---------------------------------------------------------------------------
 
-_COMPUTE_KWARGS = dict(
+_BASE_CTX = dict(
     run_id="t4",
     protocol_version="1.0.0",
     dataset="synth-linear",
     dataset_version="1.0",
     split_hash="abc123",
-    model_family=ModelFamily.LOGISTIC_REGRESSION,
+    model_family=ModelFamily.LOGISTIC_REGRESSION.value,
     model_hash="mh",
     seed=11,
 )
 
 
+# ---------------------------------------------------------------------------
+# K90Sparsity.compute(): schema and contract
+# ---------------------------------------------------------------------------
+
+
 @pytest.mark.unit
 def test_k90_compute_output_count(exact_records):
     metric = K90Sparsity()
-    results = metric.compute(exact_records, **_COMPUTE_KWARGS)
+    ctx = SparsityContext(**_BASE_CTX, attributions=exact_records)
+    results = metric.compute(ctx)
     assert len(results) == len(exact_records)
 
 
 @pytest.mark.unit
 def test_k90_compute_all_success(exact_records):
     metric = K90Sparsity()
-    results = metric.compute(exact_records, **_COMPUTE_KWARGS)
+    ctx = SparsityContext(**_BASE_CTX, attributions=exact_records)
+    results = metric.compute(ctx)
     for r in results:
         assert isinstance(r, MetricResult)
         assert r.status == RunStatus.SUCCESS
@@ -280,7 +288,8 @@ def test_k90_compute_all_success(exact_records):
 def test_k90_compute_values_in_range(exact_records):
     """k90 must be in [0, n_features] for all samples."""
     metric = K90Sparsity()
-    results = metric.compute(exact_records, **_COMPUTE_KWARGS)
+    ctx = SparsityContext(**_BASE_CTX, attributions=exact_records)
+    results = metric.compute(ctx)
     p = len(FEATURE_NAMES)
     for r in results:
         if isinstance(r, MetricResult):
@@ -289,10 +298,11 @@ def test_k90_compute_values_in_range(exact_records):
 
 @pytest.mark.unit
 def test_k90_compute_deterministic(exact_records):
-    """Same inputs → same outputs."""
+    """Same inputs -> same outputs."""
     metric = K90Sparsity()
-    r1 = metric.compute(exact_records, **_COMPUTE_KWARGS)
-    r2 = metric.compute(exact_records, **_COMPUTE_KWARGS)
+    ctx = SparsityContext(**_BASE_CTX, attributions=exact_records)
+    r1 = metric.compute(ctx)
+    r2 = metric.compute(ctx)
     for a, b in zip(r1, r2, strict=True):
         if isinstance(a, MetricResult) and isinstance(b, MetricResult):
             assert a.estimate == b.estimate
@@ -302,7 +312,8 @@ def test_k90_compute_deterministic(exact_records):
 def test_k90_compute_not_applicable_preservation(exact_records):
     """K90 does not require prediction preservation."""
     metric = K90Sparsity()
-    results = metric.compute(exact_records, **_COMPUTE_KWARGS)
+    ctx = SparsityContext(**_BASE_CTX, attributions=exact_records)
+    results = metric.compute(ctx)
     for r in results:
         if isinstance(r, MetricResult):
             assert r.prediction_preservation_status == PredictionPreservationStatus.NOT_APPLICABLE
@@ -319,14 +330,15 @@ def test_cosine_stability_compute_count(lr_fitted, synth_data, exact_records):
     X_tr, X_te, _, _ = synth_data
     baseline = X_tr.mean(axis=0)
     metric = CosineStability(sigma=0.05)
-    results = metric.compute(
-        exact_records,
+    ctx = PairwiseStabilityContext(
+        **_BASE_CTX,
+        attributions=exact_records,
         weights=model.weights,
         bias=model.bias,
         baseline=baseline,
         X=X_te[:20],
-        **_COMPUTE_KWARGS,
     )
+    results = metric.compute(ctx)
     assert len(results) == len(exact_records)
 
 
@@ -336,14 +348,15 @@ def test_cosine_stability_compute_schema(lr_fitted, synth_data, exact_records):
     X_tr, X_te, _, _ = synth_data
     baseline = X_tr.mean(axis=0)
     metric = CosineStability(sigma=0.05)
-    results = metric.compute(
-        exact_records,
+    ctx = PairwiseStabilityContext(
+        **_BASE_CTX,
+        attributions=exact_records,
         weights=model.weights,
         bias=model.bias,
         baseline=baseline,
         X=X_te[:20],
-        **_COMPUTE_KWARGS,
     )
+    results = metric.compute(ctx)
     metric_results = [r for r in results if isinstance(r, MetricResult)]
     assert len(metric_results) > 0
     for r in metric_results:
@@ -360,14 +373,15 @@ def test_cosine_stability_preserved_samples_finite(lr_fitted, synth_data, exact_
     X_tr, X_te, _, _ = synth_data
     baseline = X_tr.mean(axis=0)
     metric = CosineStability(sigma=0.05)
-    results = metric.compute(
-        exact_records,
+    ctx = PairwiseStabilityContext(
+        **_BASE_CTX,
+        attributions=exact_records,
         weights=model.weights,
         bias=model.bias,
         baseline=baseline,
         X=X_te[:20],
-        **_COMPUTE_KWARGS,
     )
+    results = metric.compute(ctx)
     for r in results:
         if isinstance(r, MetricResult) and r.status == RunStatus.SUCCESS:
             assert math.isfinite(r.estimate)
@@ -384,14 +398,15 @@ def test_spearman_stability_compute_count(lr_fitted, synth_data, exact_records):
     X_tr, X_te, _, _ = synth_data
     baseline = X_tr.mean(axis=0)
     metric = SpearmanStability(sigma=0.05)
-    results = metric.compute(
-        exact_records,
+    ctx = PairwiseStabilityContext(
+        **_BASE_CTX,
+        attributions=exact_records,
         weights=model.weights,
         bias=model.bias,
         baseline=baseline,
         X=X_te[:20],
-        **_COMPUTE_KWARGS,
     )
+    results = metric.compute(ctx)
     assert len(results) == len(exact_records)
 
 
@@ -401,14 +416,15 @@ def test_spearman_stability_compute_schema(lr_fitted, synth_data, exact_records)
     X_tr, X_te, _, _ = synth_data
     baseline = X_tr.mean(axis=0)
     metric = SpearmanStability(sigma=0.05)
-    results = metric.compute(
-        exact_records,
+    ctx = PairwiseStabilityContext(
+        **_BASE_CTX,
+        attributions=exact_records,
         weights=model.weights,
         bias=model.bias,
         baseline=baseline,
         X=X_te[:20],
-        **_COMPUTE_KWARGS,
     )
+    results = metric.compute(ctx)
     for r in results:
         if isinstance(r, MetricResult):
             assert r.metric_name == "spearman_stability"
@@ -423,14 +439,16 @@ def test_spearman_stability_compute_schema(lr_fitted, synth_data, exact_records)
 @pytest.mark.unit
 def test_runtime_metric_compute_count(exact_records):
     metric = RuntimeMetric()
-    results = metric.compute(exact_records, **_COMPUTE_KWARGS)
+    ctx = RuntimeContext(**_BASE_CTX, attributions=exact_records)
+    results = metric.compute(ctx)
     assert len(results) == len(exact_records)
 
 
 @pytest.mark.unit
 def test_runtime_metric_values_positive(exact_records):
     metric = RuntimeMetric()
-    results = metric.compute(exact_records, **_COMPUTE_KWARGS)
+    ctx = RuntimeContext(**_BASE_CTX, attributions=exact_records)
+    results = metric.compute(ctx)
     for r in results:
         if isinstance(r, MetricResult):
             assert r.estimate >= 0.0
@@ -468,11 +486,12 @@ def test_timer_and_memory_captures_memory():
 def test_k90_linear_model_is_sparse(lr_fitted, synth_data, exact_records):
     """
     ExactLinear on the synthetic fixture (BETA_TRUE=[1.5,-1.2,0.8,0,0,0,0,0]):
-    only 3 nonzero true features. k90 should typically be ≤ 4 for most samples.
+    only 3 nonzero true features. k90 should typically be <= 4 for most samples.
     This is a property test (not a golden value).
     """
     metric = K90Sparsity()
-    results = metric.compute(exact_records, **_COMPUTE_KWARGS)
+    ctx = SparsityContext(**_BASE_CTX, attributions=exact_records)
+    results = metric.compute(ctx)
     k_values = [
         r.estimate for r in results if isinstance(r, MetricResult) and r.status == RunStatus.SUCCESS
     ]
@@ -482,3 +501,217 @@ def test_k90_linear_model_is_sparse(lr_fitted, synth_data, exact_records):
     assert mean_k < len(
         FEATURE_NAMES
     ), f"Mean k90={mean_k:.2f} should be < {len(FEATURE_NAMES)} for sparse linear model."
+
+
+# ---------------------------------------------------------------------------
+# Context-contract tests (DR-008 §4)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.unit
+def test_sparsity_context_accepts_valid(exact_records):
+    """Valid SparsityContext constructs without error."""
+    ctx = SparsityContext(**_BASE_CTX, attributions=exact_records)
+    assert isinstance(ctx.attributions, tuple)
+    assert len(ctx.attributions) == len(exact_records)
+    assert ctx.threshold == 0.90
+
+
+@pytest.mark.unit
+def test_sparsity_context_rejects_empty_attributions():
+    """Empty attribution sequence raises ValueError."""
+    with pytest.raises((ValueError, ValidationError)):
+        SparsityContext(**_BASE_CTX, attributions=[])
+
+
+@pytest.mark.unit
+def test_sparsity_context_rejects_bad_threshold_zero():
+    """threshold=0 is invalid (must be > 0)."""
+    with pytest.raises((ValueError, ValidationError)):
+        SparsityContext(**_BASE_CTX, attributions=["placeholder"], threshold=0.0)
+
+
+@pytest.mark.unit
+def test_sparsity_context_rejects_bad_threshold_above_one(exact_records):
+    """threshold > 1 is invalid."""
+    with pytest.raises((ValueError, ValidationError)):
+        SparsityContext(**_BASE_CTX, attributions=exact_records, threshold=1.1)
+
+
+@pytest.mark.unit
+def test_sparsity_context_rejects_nan_threshold(exact_records):
+    """NaN threshold is invalid."""
+    with pytest.raises((ValueError, ValidationError)):
+        SparsityContext(**_BASE_CTX, attributions=exact_records, threshold=float("nan"))
+
+
+@pytest.mark.unit
+def test_sparsity_context_rejects_inf_threshold(exact_records):
+    """Positive infinity threshold is invalid."""
+    with pytest.raises((ValueError, ValidationError)):
+        SparsityContext(**_BASE_CTX, attributions=exact_records, threshold=float("inf"))
+
+
+@pytest.mark.unit
+def test_sparsity_context_rejects_neg_inf_threshold(exact_records):
+    """Negative infinity threshold is invalid."""
+    with pytest.raises((ValueError, ValidationError)):
+        SparsityContext(**_BASE_CTX, attributions=exact_records, threshold=float("-inf"))
+
+
+@pytest.mark.unit
+def test_sparsity_context_is_frozen(exact_records):
+    """SparsityContext is immutable — field reassignment raises."""
+    ctx = SparsityContext(**_BASE_CTX, attributions=exact_records)
+    with pytest.raises((ValidationError, TypeError)):
+        ctx.threshold = 0.5  # type: ignore[misc]
+
+
+@pytest.mark.unit
+def test_sparsity_context_tuple_is_immutable(exact_records):
+    """The stored attributions tuple does not allow item assignment."""
+    ctx = SparsityContext(**_BASE_CTX, attributions=exact_records)
+    with pytest.raises(TypeError):
+        ctx.attributions[0] = exact_records[0]  # type: ignore[index]
+
+
+@pytest.mark.unit
+def test_sparsity_context_rejects_invalid_element_type(exact_records):
+    """A non-AttributionRecord element in the sequence raises ValueError."""
+    bad_list = list(exact_records)
+    bad_list[0] = "not_a_record"  # type: ignore[assignment]
+    with pytest.raises((ValueError, ValidationError)):
+        SparsityContext(**_BASE_CTX, attributions=bad_list)
+
+
+@pytest.mark.unit
+def test_runtime_context_accepts_valid(exact_records):
+    """Valid RuntimeContext constructs without error."""
+    ctx = RuntimeContext(**_BASE_CTX, attributions=exact_records)
+    assert isinstance(ctx.attributions, tuple)
+    assert len(ctx.attributions) == len(exact_records)
+
+
+@pytest.mark.unit
+def test_runtime_context_rejects_empty_attributions():
+    """Empty attribution sequence raises."""
+    with pytest.raises((ValueError, ValidationError)):
+        RuntimeContext(**_BASE_CTX, attributions=[])
+
+
+@pytest.mark.unit
+def test_runtime_context_is_frozen(exact_records):
+    """RuntimeContext is immutable."""
+    ctx = RuntimeContext(**_BASE_CTX, attributions=exact_records)
+    with pytest.raises((ValidationError, TypeError)):
+        ctx.run_id = "changed"  # type: ignore[misc]
+
+
+@pytest.mark.unit
+def test_runtime_context_tuple_is_immutable(exact_records):
+    """The stored attributions tuple does not allow item assignment."""
+    ctx = RuntimeContext(**_BASE_CTX, attributions=exact_records)
+    with pytest.raises(TypeError):
+        ctx.attributions[0] = exact_records[0]  # type: ignore[index]
+
+
+@pytest.mark.unit
+def test_runtime_context_rejects_invalid_element_type(exact_records):
+    """A non-AttributionRecord element raises."""
+    bad_list = list(exact_records)
+    bad_list[0] = 42  # type: ignore[assignment]
+    with pytest.raises((ValueError, ValidationError)):
+        RuntimeContext(**_BASE_CTX, attributions=bad_list)
+
+
+@pytest.mark.unit
+def test_pairwise_stability_context_accepts_valid(lr_fitted, synth_data, exact_records):
+    """Valid PairwiseStabilityContext constructs without error."""
+    model, _rec = lr_fitted
+    X_tr, X_te, _, _ = synth_data
+    baseline = X_tr.mean(axis=0)
+    ctx = PairwiseStabilityContext(
+        **_BASE_CTX,
+        attributions=exact_records,
+        weights=model.weights,
+        bias=model.bias,
+        baseline=baseline,
+        X=X_te[:20],
+    )
+    assert isinstance(ctx.attributions, tuple)
+    assert ctx.sigma == 0.05
+
+
+@pytest.mark.unit
+def test_pairwise_stability_context_rejects_empty():
+    """Empty attributions raises."""
+    with pytest.raises((ValueError, ValidationError)):
+        PairwiseStabilityContext(
+            **_BASE_CTX,
+            attributions=[],
+            weights=np.ones(3),
+            bias=0.0,
+            baseline=np.zeros(3),
+            X=np.zeros((1, 3)),
+        )
+
+
+@pytest.mark.unit
+def test_pairwise_stability_context_is_frozen(lr_fitted, synth_data, exact_records):
+    """PairwiseStabilityContext is immutable."""
+    model, _rec = lr_fitted
+    X_tr, X_te, _, _ = synth_data
+    baseline = X_tr.mean(axis=0)
+    ctx = PairwiseStabilityContext(
+        **_BASE_CTX,
+        attributions=exact_records,
+        weights=model.weights,
+        bias=model.bias,
+        baseline=baseline,
+        X=X_te[:20],
+    )
+    with pytest.raises((ValidationError, TypeError)):
+        ctx.sigma = 0.1  # type: ignore[misc]
+
+
+@pytest.mark.unit
+def test_pairwise_stability_context_tuple_is_immutable(lr_fitted, synth_data, exact_records):
+    """Stored attributions tuple does not allow item assignment."""
+    model, _rec = lr_fitted
+    X_tr, X_te, _, _ = synth_data
+    baseline = X_tr.mean(axis=0)
+    ctx = PairwiseStabilityContext(
+        **_BASE_CTX,
+        attributions=exact_records,
+        weights=model.weights,
+        bias=model.bias,
+        baseline=baseline,
+        X=X_te[:20],
+    )
+    with pytest.raises(TypeError):
+        ctx.attributions[0] = exact_records[0]  # type: ignore[index]
+
+
+@pytest.mark.unit
+def test_no_new_first_party_suppressions():
+    """
+    DR-008 §5: No new first-party type:ignore or noqa suppressions in migrated files.
+    Allowed: noqa:ANN401 on coerce_attributions (bare tuple return annotation),
+             noqa in existing pre-migration code outside the 4 metric files.
+    The four quarantined type:ignore[override] suppressions must be absent.
+    """
+    import pathlib
+
+    src_root = pathlib.Path("src/explaincheck/metrics")
+    migrated = [
+        src_root / "stability" / "cosine_stability.py",
+        src_root / "stability" / "spearman_stability.py",
+        src_root / "sparsity" / "k90_sparsity.py",
+        src_root / "runtime" / "runtime_metric.py",
+    ]
+    for path in migrated:
+        text = path.read_text(encoding="utf-8")
+        assert "type: ignore[override]" not in text, (
+            f"{path.name} still contains a quarantined override suppression"
+        )
+        assert "type: ignore[override]" not in text

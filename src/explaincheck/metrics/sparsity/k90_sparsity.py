@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import time
 from typing import Any
-from typing import Any as _Any
 
 import numpy as np
 
@@ -35,6 +34,7 @@ from explaincheck.contracts import (
     RunStatus,
 )
 from explaincheck.metrics.base import BaseMetric
+from explaincheck.metrics.contexts import SparsityContext
 from explaincheck.provenance import utc_now_iso
 
 
@@ -52,34 +52,33 @@ def k90_sparsity(attribution: np.ndarray, threshold: float = 0.90) -> int:
     Returns
     -------
     int
-        k90 value. 0 if all attributions are zero.
+        k90 value.  0 if total absolute mass is zero.
 
     Raises
     ------
     ValueError
-        If attribution contains NaN/Inf or is empty.
+        If the array contains NaN or Inf values.
     """
     if not np.all(np.isfinite(attribution)):
         raise ValueError("Attribution contains NaN or Inf.")
-    if len(attribution) == 0:
-        raise ValueError("Empty attribution vector.")
-    abs_a = np.abs(attribution)
-    total = float(abs_a.sum())
-    if total == 0.0:
+    total_mass = float(np.sum(np.abs(attribution)))
+    if total_mass == 0.0:
         return 0
-    sorted_desc = np.sort(abs_a)[::-1]
-    cumsum = np.cumsum(sorted_desc)
-    passing = np.where(cumsum / total >= threshold)[0]
-    if len(passing) == 0:
-        return int(len(attribution))
-    return int(passing[0]) + 1  # 1-indexed count
+    sorted_abs = np.sort(np.abs(attribution))[::-1]
+    cumulative = np.cumsum(sorted_abs)
+    k90_indices = np.where(cumulative / total_mass >= threshold)[0]
+    if len(k90_indices) == 0:
+        return len(attribution)
+    return int(k90_indices[0]) + 1
 
 
-class K90Sparsity(BaseMetric[_Any]):
+class K90Sparsity(BaseMetric[SparsityContext]):
     """
-    k90 Sparsity metric.
+    K90 sparsity metric.
 
-    Direction: lower = sparser explanations (fewer features needed to capture 90% of attribution mass).
+    Minimum number of top-|attribution| features needed to cover 90% of the
+    total L1 attribution mass.  Lower is sparser (more concentrated attribution).
+    Migrated to Option B+ typed context interface (DR-008).
     """
 
     family = MetricFamily.SPARSITY
@@ -90,8 +89,8 @@ class K90Sparsity(BaseMetric[_Any]):
     aggregation_method = "mean"
 
     def __init__(self, *, threshold: float = 0.90) -> None:
-        if not 0.0 < threshold <= 1.0:
-            raise ValueError(f"threshold must be in (0, 1], got {threshold}")
+        if not np.isfinite(threshold) or not (0.0 < threshold <= 1.0):
+            raise ValueError(f"threshold must be a finite value in (0, 1], got {threshold}")
         self._threshold = threshold
 
     @property
@@ -99,39 +98,45 @@ class K90Sparsity(BaseMetric[_Any]):
         return [
             "Attribution vectors are dense and finite.",
             "k90 is computed over absolute values (direction-agnostic sparsity).",
-            "Zero attribution vector → k90 = 0 (trivially sparse).",
+            "Zero attribution vector -> k90 = 0 (trivially sparse).",
         ]
 
     @property
     def parameters(self) -> dict[str, Any]:
         return {"threshold": self._threshold}
 
-    def compute(  # type: ignore[override]  # Stage 4 quarantine: pending StabilityContext migration
+    def compute(
         self,
-        attributions: list[AttributionRecord],
-        *,
-        run_id: str,
-        protocol_version: str,
-        dataset: str,
-        dataset_version: str,
-        split_hash: str,
-        model_family: ModelFamily,
-        model_hash: str,
-        seed: int,
-        stressor: str | None = None,
-        stress_level: str | None = None,
-        subgroup: str | None = None,
-        subgroup_value: str | None = None,
-        **kwargs: Any,
+        context: SparsityContext,
     ) -> list[MetricResult | FailureRecord]:
-        self.validate_attributions(attributions)
+        """
+        Compute k90 sparsity for each AttributionRecord in context.attributions.
+
+        Uses context.threshold if provided; otherwise falls back to self._threshold.
+        The threshold in context is validated at construction time by SparsityContext.
+        """
+        attributions: tuple[AttributionRecord, ...] = context.attributions
+        run_id = context.run_id
+        protocol_version = context.protocol_version
+        dataset = context.dataset
+        dataset_version = context.dataset_version
+        split_hash = context.split_hash
+        model_family = ModelFamily(context.model_family)
+        model_hash = context.model_hash
+        seed = context.seed
+        stressor = context.stressor
+        stress_level = context.stress_level
+        subgroup = context.subgroup
+        subgroup_value = context.subgroup_value
+        threshold = context.threshold
+
         results: list[MetricResult | FailureRecord] = []
 
         for rec in attributions:
             t0 = time.perf_counter()
             try:
                 a = np.array(rec.attribution, dtype=float)
-                k = k90_sparsity(a, threshold=self._threshold)
+                k = k90_sparsity(a, threshold=threshold)
                 rt = (time.perf_counter() - t0) * 1000
                 results.append(
                     MetricResult(

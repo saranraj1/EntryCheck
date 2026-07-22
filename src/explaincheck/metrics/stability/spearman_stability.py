@@ -7,7 +7,7 @@ Scientific definition:
     Spearman_rho(A, A') = Pearson correlation of rank-transformed A and A'.
 
     When both attribution vectors are constant (zero variance), rho = 1.0.
-    When one is constant, other is not → rho = NaN → recorded as excluded.
+    When one is constant, other is not -> rho = NaN -> recorded as excluded.
 
 Direction: higher = more stable.
 Range: [-1, 1].
@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import time
 from typing import Any
-from typing import Any as _Any
 
 import numpy as np
 from scipy.stats import spearmanr
@@ -34,6 +33,7 @@ from explaincheck.contracts import (
     RunStatus,
 )
 from explaincheck.metrics.base import BaseMetric
+from explaincheck.metrics.contexts import PairwiseStabilityContext
 from explaincheck.metrics.stability.top_k_jaccard import _sigmoid
 from explaincheck.provenance import utc_now_iso
 
@@ -43,8 +43,8 @@ def spearman_pair(a: np.ndarray, b: np.ndarray) -> float:
     Spearman rank correlation between two dense attribution vectors.
 
     Edge cases:
-    - Both constant → 1.0 (identical trivial attributions)
-    - One constant, other not → NaN (undefined; caller should handle)
+    - Both constant -> 1.0 (identical trivial attributions)
+    - One constant, other not -> NaN (undefined; caller should handle)
 
     Parameters
     ----------
@@ -68,11 +68,12 @@ def spearman_pair(a: np.ndarray, b: np.ndarray) -> float:
     return float(rho) if np.isfinite(rho) else float("nan")
 
 
-class SpearmanStability(BaseMetric[_Any]):
+class SpearmanStability(BaseMetric[PairwiseStabilityContext]):
     """
     Prediction-conditioned Spearman rank correlation stability.
 
     Direction: higher = more stable (attribution rank orders preserved across perturbations).
+    Migrated to Option B+ typed context interface (DR-008).
     """
 
     family = MetricFamily.STABILITY
@@ -111,30 +112,28 @@ class SpearmanStability(BaseMetric[_Any]):
             "n_perturbations": self._n_perturbations,
         }
 
-    def compute(  # type: ignore[override]  # Stage 4 quarantine: pending context migration
+    def compute(
         self,
-        attributions: list[AttributionRecord],
-        *,
-        run_id: str,
-        protocol_version: str,
-        dataset: str,
-        dataset_version: str,
-        split_hash: str,
-        model_family: ModelFamily,
-        model_hash: str,
-        seed: int,
-        stressor: str | None = None,
-        stress_level: str | None = None,
-        subgroup: str | None = None,
-        subgroup_value: str | None = None,
-        weights: np.ndarray,
-        bias: float,
-        baseline: np.ndarray,
-        X: np.ndarray,
-        **kwargs: Any,
+        context: PairwiseStabilityContext,
     ) -> list[MetricResult | FailureRecord]:
         """Compute Spearman stability using analytic attribution pairs (exact_linear)."""
-        self.validate_attributions(attributions)
+        attributions: tuple[AttributionRecord, ...] = context.attributions
+        run_id = context.run_id
+        protocol_version = context.protocol_version
+        dataset = context.dataset
+        dataset_version = context.dataset_version
+        split_hash = context.split_hash
+        model_family = ModelFamily(context.model_family)
+        model_hash = context.model_hash
+        seed = context.seed
+        stressor = context.stressor
+        stress_level = context.stress_level
+        subgroup = context.subgroup
+        subgroup_value = context.subgroup_value
+        weights = context.weights
+        bias = context.bias
+        baseline = context.baseline
+        X = context.X
 
         rng = np.random.default_rng(seed + 9000)
         n = len(attributions)
