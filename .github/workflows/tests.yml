@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --extra dev
 
+      - name: Ruff format check
+        run: uv run ruff format --check src/ tests/
+
       - name: Ruff lint
         run: uv run ruff check src/ tests/
 
@@ -43,9 +46,12 @@ jobs:
         run: uv run pytest tests/integration/ -v --tb=short
 
       - name: Test-ID inventory hash
-        run: uv run python scripts/compute_test_id_hash.py
+        run: |
+          uv run python scripts/compute_test_id_hash.py | tee ci-test-id-hash.txt
+          echo "hash=$(cat ci-test-id-hash.txt | grep 'test-ID sha256' | awk '{print $NF}')" >> $GITHUB_OUTPUT
+        id: test_hash
 
-      - name: Full test run
+      - name: Full test run with counts
         run: uv run pytest tests/ -q
 
       - name: Artifact validation
@@ -53,6 +59,13 @@ jobs:
 
       - name: Coverage report
         run: uv run pytest tests/unit/ tests/property/ tests/golden/ --cov=src/explaincheck --cov-report=term-missing
+
+      - name: Upload test-ID hash artifact (DR-008 §7)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-test-id-hash-${{ github.sha }}
+          path: ci-test-id-hash.txt
+          retention-days: 90
 
   scientific:
     runs-on: ubuntu-latest
