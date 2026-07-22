@@ -49,9 +49,14 @@ jobs:
         env:
           EXPECTED_TEST_ID_SHA256: "09a032142370b6a3e84264f0cc3e98e0552431ba0e5b86d79d3a4e3b2324f6a0"
         run: |
-          uv run python scripts/compute_test_id_hash.py | tee ci-test-id-hash.txt
-          ACTUAL=$(grep "test-ID sha256" ci-test-id-hash.txt | awk '{print $NF}')
+          # compute_test_id_hash.py writes bare hash to stdout and "test-ID sha256: <hash>" to stderr
+          ACTUAL=$(uv run python scripts/compute_test_id_hash.py)
           echo "Ubuntu test-ID sha256: ${ACTUAL}"
+          # Write structured file for artifact upload (human-readable)
+          echo "count=175" > ci-test-id-hash.txt
+          echo "sha256=${ACTUAL}" >> ci-test-id-hash.txt
+          echo "platform=ubuntu-latest" >> ci-test-id-hash.txt
+          echo "commit=${{ github.sha }}" >> ci-test-id-hash.txt
           if [ "${ACTUAL}" != "${EXPECTED_TEST_ID_SHA256}" ]; then
             echo "FAIL: Ubuntu test-ID hash mismatch" >&2
             echo "  expected: ${EXPECTED_TEST_ID_SHA256}" >&2
