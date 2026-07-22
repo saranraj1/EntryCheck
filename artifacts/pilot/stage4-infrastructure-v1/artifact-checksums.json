@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "decision_record": "DR-008A",
+  "artifact_directory": "artifacts\\pilot\\stage4-infrastructure-v1",
+  "files": {
+    "README.md": {
+      "sha256": "c14b0bbcb6d2e6849e1940557b71a39633f7d8200fcfe2877e1ee19dcbec315d"
+    },
+    "run-manifest.json": {
+      "sha256": "c1531dd905600282ed9ceadba597e8bebbce944240b62bc9a9f8f18759a329b9"
+    },
+    "infrastructure-validation.json": {
+      "sha256": "2f05ef4af71bbc48504ef5d8410437c2b286745ae334ce3a43a5312ac3f7533a"
+    },
+    "test-inventory.json": {
+      "sha256": "8601d5931003fc9ae551bc09709a0cbb78a26246064e207efa50ccdb1bd163aa"
+    },
+    "suppression-audit.json": {
+      "sha256": "b2db20a57de8b78d8747abfec309f62505e8ac1843e6f6479c3a44e6076032de"
+    }
+  },
+  "required_json_fields": {
+    "run-manifest.json": [
+      "schema_version",
+      "phase",
+      "decision_record",
+      "authorized_snapshot",
+      "source_commit",
+      "status",
+      "confirmatory_experiments"
+    ],
+    "infrastructure-validation.json": [
+      "schema_version",
+      "platform",
+      "python_version",
+      "source_commit",
+      "results",
+      "ubuntu_validation",
+      "suppression_summary"
+    ],
+    "test-inventory.json": [
+      "schema_version",
+      "source_commit",
+      "test_count",
+      "test_id_sha256",
+      "ubuntu_validation"
+    ],
+    "suppression-audit.json": [
+      "schema_version",
+      "source_commit",
+      "audit_scope",
+      "quarantined_suppressions_removed",
+      "remaining_suppressions",
+      "verdict"
+    ]
+  },
+  "_note": "artifact-checksums.json is excluded from its own hash list (self-referential hash problem)."
+}

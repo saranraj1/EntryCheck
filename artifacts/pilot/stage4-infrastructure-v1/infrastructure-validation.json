@@ -2,9 +2,9 @@
   "schema_version": "1.0",
   "platform": "Windows",
   "python_version": "3.12.9",
-  "source_commit": "7cd0bdb75a6143120c74f5536bc3d8ce36d49623",
+  "source_commit": "14264350431ebec345646ac4c097e818512ce7b3",
   "uv_lock_sha256": "b617a49ba2d6e40d34e3a92c4078bf64c90862b4e21fdf5cb2612e9b1f0c63b1",
-  "validation_timestamp_utc": "2026-07-22T04:32:00Z",
+  "validation_timestamp_utc": "2026-07-22T04:52:00Z",
   "commands_run": [
     "uv sync --locked --extra dev",
     "uv run ruff check src/ tests/",
@@ -13,7 +13,8 @@
     "uv run python scripts/compute_test_id_hash.py",
     "uv run pytest tests/ -q",
     "uv run pytest tests/ --cov=src/explaincheck --cov-report=term-missing",
-    "uv run explaincheck validate-stage3-artifacts"
+    "uv run explaincheck validate-stage3-artifacts",
+    "uv run explaincheck validate-stage4-infrastructure-artifacts"
   ],
   "results": {
     "ruff_lint": "PASS",
@@ -28,20 +29,14 @@
     "coverage_threshold": 80.0,
     "coverage_status": "PASS",
     "stage3_artifacts_validated": "7/7 PASS",
+    "stage4_artifacts_validated": "PASS (after artifact-checksums.json generated)",
     "working_tree_clean": true
   },
-  "ubuntu_validation": {
-    "status": "PASS",
-    "ci_run": "https://github.com/saranraj1/EntryCheck/actions/runs/29891540620",
-    "commit": "7ef6391410876c57597c36e9417cc89aa3a92e90",
-    "job_unit_and_property": "success (1m 47s)",
-    "job_scientific": "success (19s)",
-    "artifact_name": "ubuntu-test-id-hash-7ef6391410876c57597c36e9417cc89aa3a92e90",
-    "artifact_digest": "sha256:13a27407c6701302994c58f71503b3299a3dd407af8ad5143645a9896fcb2ae1"
-  },
+  "ubuntu_validation": "PENDING — GitHub Actions CI on commit 14264350431ebec345646ac4c097e818512ce7b3",
   "suppression_summary": {
     "type_ignore_override_in_migrated_files": 0,
-    "noqa_ANN401_in_contexts": 5,
-    "classification": "noqa:ANN401 on bare tuple/list return annotations in coerce_attributions validators — permitted per DR-008 §5 (existing project-level suppression pattern, not hiding interface incompatibility)"
+    "noqa_ANN401_newly_introduced": 0,
+    "noqa_ANN401_pre_existing": 2,
+    "classification": "3 dead noqa:ANN401 markers removed (ANN401 is globally suppressed in pyproject.toml; they were inert). 2 pre-existing on AOPCContext/StabilityContext.non_empty remain accurately classified. No Any in any migrated signature."
   }
 }

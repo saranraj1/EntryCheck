@@ -1,14 +1,12 @@
 {
   "schema_version": "1.0",
   "phase": "stage4-infrastructure-pilot",
-  "decision_record": "DR-008",
+  "decision_record": "DR-008A",
   "authorized_snapshot": "cdc6a0070ac70feaa4fa19ba33cd131d69beaadd",
-  "source_commit": "7cd0bdb75a6143120c74f5536bc3d8ce36d49623",
-  "artifact_commit": "86c9f3147f43ec9b7e9e12a04e81e3ef21b7e0bb",
-  "ci_workflow_commit": "e58a18d00e0f5e0f0f98b0a2c6d0b1e1234567ab",
-  "status": "infrastructure-validation-complete",
+  "source_commit": "14264350431ebec345646ac4c097e818512ce7b3",
+  "status": "pending-ubuntu-verification",
   "confirmatory_experiments": "NOT_AUTHORIZED",
   "real_dataset_benchmarks": "NOT_AUTHORIZED",
   "stage4_scientific_exit_validation": "NOT_AUTHORIZED",
-  "note": "Append-only. Stage 4 exit-gate validation results will be added here after separate plan approval (DR-008 §9)."
+  "note": "Append-only. This is the final DR-008A closure commit. Ubuntu CI verification on this exact commit is required to close DR-008A."
 }

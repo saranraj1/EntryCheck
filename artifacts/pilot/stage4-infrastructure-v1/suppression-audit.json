@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "source_commit": "7cd0bdb75a6143120c74f5536bc3d8ce36d49623",
+  "source_commit": "14264350431ebec345646ac4c097e818512ce7b3",
   "audit_scope": [
     "src/explaincheck/metrics/stability/cosine_stability.py",
     "src/explaincheck/metrics/stability/spearman_stability.py",
@@ -10,62 +10,50 @@
   ],
   "quarantined_suppressions_removed": {
     "cosine_stability.py": {
-      "line": 111,
       "was": "def compute(  # type: ignore[override]  # Stage 4 quarantine: pending context migration",
-      "now": "def compute(  # suppression removed; BaseMetric[PairwiseStabilityContext] eliminates need"
+      "now": "def compute(  — suppression removed; BaseMetric[PairwiseStabilityContext] makes override compatible"
     },
     "spearman_stability.py": {
-      "line": 114,
       "was": "def compute(  # type: ignore[override]  # Stage 4 quarantine: pending context migration",
-      "now": "def compute(  # suppression removed"
+      "now": "def compute(  — suppression removed"
     },
     "k90_sparsity.py": {
-      "line": 109,
       "was": "def compute(  # type: ignore[override]  # Stage 4 quarantine: pending StabilityContext migration",
-      "now": "def compute(  # suppression removed"
+      "now": "def compute(  — suppression removed"
     },
     "runtime_metric.py": {
-      "line": 82,
       "was": "def compute(  # type: ignore[override]  # Stage 4 quarantine: pending context migration",
-      "now": "def compute(  # suppression removed"
+      "now": "def compute(  — suppression removed"
     }
+  },
+  "ann401_contradiction_resolution": {
+    "rule_ANN401": "Flags use of 'Any' in type annotations (dynamically typed return/parameter). Does NOT flag bare 'list' or bare 'tuple' unless they are typed as 'Any'.",
+    "project_config": "ANN401 is in the global ruff ignore list (pyproject.toml line 76: ignore = ['ANN101','ANN102','ANN401',...]). The rule fires for zero files in this project.",
+    "dr008_migration_error": "Three # noqa: ANN401 markers were introduced during the DR-008 migration on the coerce_attributions validators. These were inert (the rule was already globally suppressed) and the description in the previous closure report was inaccurate ('on validator return types (tuple/list)'). ANN401 is about Any, not about tuple/list.",
+    "resolution": "All three newly-introduced dead # noqa: ANN401 markers removed in DR-008A source commit. Return type annotation tightened from bare 'tuple' to concrete 'tuple[object, ...]'. mypy: 0 issues."
   },
   "remaining_suppressions": [
     {
       "file": "src/explaincheck/metrics/contexts.py",
       "line": 92,
-      "text": "noqa: ANN401",
-      "classification": "PERMITTED",
-      "reason": "Bare 'list' return type annotation on AOPCContext.non_empty — pre-existing pattern, not hiding interface incompatibility"
+      "exact_signature": "def non_empty(cls, v: list) -> list:  # noqa: ANN401",
+      "context": "@field_validator('attributions') @classmethod in AOPCContext",
+      "existed_before_dr008": true,
+      "any_in_signature": false,
+      "why_necessary": "Pydantic v2 field_validator receives the already-coerced field value as a plain list. The annotation 'list' here is a Pydantic validator pattern, not a typed public API. ANN401 does not fire for this rule (ANN401 = Any, not list). The # noqa: ANN401 is therefore inert. It predates DR-008 and is outside this migration's scope.",
+      "classification": "PRE-EXISTING — inert dead suppression (ANN401 globally ignored). Unrelated to DR-008 migration. Accurately classified; not hiding interface incompatibility."
     },
     {
       "file": "src/explaincheck/metrics/contexts.py",
       "line": 145,
-      "text": "noqa: ANN401",
-      "classification": "PERMITTED",
-      "reason": "Bare 'list' return type annotation on StabilityContext.non_empty — pre-existing pattern"
-    },
-    {
-      "file": "src/explaincheck/metrics/contexts.py",
-      "line": 180,
-      "text": "noqa: ANN401",
-      "classification": "PERMITTED",
-      "reason": "Bare 'tuple' return type on PairwiseStabilityContext.coerce_attributions — required because Pydantic validator return type must accept any sequence input; does not hide incompatibility"
-    },
-    {
-      "file": "src/explaincheck/metrics/contexts.py",
-      "line": 230,
-      "text": "noqa: ANN401",
-      "classification": "PERMITTED",
-      "reason": "Same as above for SparsityContext.coerce_attributions"
-    },
-    {
-      "file": "src/explaincheck/metrics/contexts.py",
-      "line": 275,
-      "text": "noqa: ANN401",
-      "classification": "PERMITTED",
-      "reason": "Same as above for RuntimeContext.coerce_attributions"
+      "exact_signature": "def non_empty(cls, v: list) -> list:  # noqa: ANN401",
+      "context": "@field_validator('attributions') @classmethod in StabilityContext",
+      "existed_before_dr008": true,
+      "any_in_signature": false,
+      "why_necessary": "Same as line 92. Pre-existing Pydantic v2 validator pattern in StabilityContext. The # noqa: ANN401 is inert.",
+      "classification": "PRE-EXISTING — inert dead suppression. Unrelated to DR-008 migration. Not hiding interface incompatibility."
     }
   ],
-  "verdict": "PASS — All 4 quarantined type:ignore[override] suppressions removed. No new first-party suppressions hide interface incompatibilities. All remaining noqa:ANN401 are on validator return types, not on metric compute() signatures."
+  "newly_introduced_suppressions": [],
+  "verdict": "PASS — All 4 quarantined type:ignore[override] suppressions removed. Three dead noqa:ANN401 markers introduced by DR-008 are also removed (DR-008A correction). Remaining 2 suppressions are pre-existing, inert (ANN401 globally disabled), and accurately classified. No Any appears in any migrated signature. No new first-party suppression hides interface incompatibility."
 }
