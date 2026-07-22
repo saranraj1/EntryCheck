@@ -1,193 +1,288 @@
-[Certain] The only remaining weakness is that the Ubuntu hash is reported rather than directly reproduced in the pasted log; this is now a documentation-quality issue, not a defensible reason to block Stage 3 again.
+[Certain] The plan is implementable, but approving it unchanged would reintroduce weak typing, ambiguous provenance, and the same cross-platform evidence problem that delayed Stage 3.
 
-# DR-007 — Stage 3 Exit Approval and Stage 4 Authorization
+# DR-008 — Stage 4 Infrastructure Plan Approval
 
-**Project:** EC-TABULAR-001 — ExplainCheck  
+**Project:** EC-TABULAR-001  
 
 **Date:** 2026-07-22  
 
-**Accountable researcher:** Saranraj U  
+**Decision:** ✅ **Approved with mandatory corrections**  
 
-**Stage 3 decision:** ✅ **Approved and closed**  
+**Authorized work:** Stage 4 infrastructure migration only  
 
-**Stage 4 decision:** ✅ **Authorized to resume under restrictions**  
+**Confirmatory experiments:** ⛔ Not authorized  
 
-**Confirmatory experiments:** ❌ **Not authorized**
+**Real-dataset benchmarks:** ⛔ Not authorized  
 
-## 1. Final determination
+**Stage 4 scientific exit validation:** ⛔ Requires a separate approved plan
 
-[Certain] Stage 3 has satisfied its scientific, engineering, reproducibility and provenance exit requirements based on the submitted DR-006A through DR-006D evidence.
+## 1. Approved scope
 
-[Certain] The final accepted repository snapshot is:
+[Certain] Antigravity may implement:
+
+- `K90Sparsity → BaseMetric[SparsityContext]`
+- `RuntimeMetric → BaseMetric[RuntimeContext]`
+- `CosineStability → BaseMetric[StabilityContext]`
+- `SpearmanStability → BaseMetric[StabilityContext]`
+- Removal of the four quarantined first-party override suppressions
+- Context validation and contract tests
+- Coverage-policy disclosure required by DR-007
+- Stage 4 infrastructure artifact scaffolding
+- Windows and Ubuntu engineering verification
+
+[Certain] The implementation must begin from:
 
 ```
 cdc6a0070ac70feaa4fa19ba33cd131d69beaadd
 ```
 
-[Certain] This snapshot passed the reported Windows and Ubuntu workflows with:
+The premature Stage 4 commits may be inspected, but they must not be cherry-picked wholesale without reviewing their diffs.
 
-- 155 collected tests
-- 155 passing tests
-- Matching test inventory:
-    
-    `d9017aa1bd4073cfd7ac4280483663c7f4bd3c70e7b2198fbd5ea83408058b80`
-    
-- Ruff lint and format checks
-- Mypy checks
-- Coverage above 80%
-- Seven-of-seven artifact validation
-- Matching lockfile:
-    
-    `b617a49ba2d6e40d34e3a92c4078bf64c90862b4e21fdf5cb2612e9b1f0c63b1`
-    
+## 2. Mandatory typing correction
 
-[Certain] The earlier 100-row LIME background entry is superseded. The accepted configuration is:
+[Certain] These proposed declarations are not acceptable under the Option B+ contract:
 
-- KernelSHAP background: 50 rows
-- LIME reference-validation background: 200 rows
-- RF+LIME determinism background: 200 rows
-- XGB+LIME determinism background: 200 rows
+```python
+attributions: list
+```
 
-## 2. Accepted provenance map
+They discard the element type and conflict with the purpose of the generic metric interface.
 
-| Role | Accepted commit |
-| --- | --- |
-| Scientific Stage 3 source | `e2e0b0adcc1c8c9ec08d7b3bd0e0866d2753659a` |
-| Artifact generation source | `e2e0b0adcc1c8c9ec08d7b3bd0e0866d2753659a` |
-| First complete seven-file bundle | `09f0b5f1aa75007d762f06e12fb77c36121e2179` |
-| Final tested and normalized Stage 3 closure | `cdc6a0070ac70feaa4fa19ba33cd131d69beaadd` |
+Use explicit types:
 
-[Certain] `cdc6a007…` is the authoritative Stage 3 exit snapshot. The intervening commits changed CI, provenance, checksum normalization and documentation—not frozen scientific outcomes.
+```python
+class SparsityContext(BaseMetricContext):
+    attributions: tuple[AttributionRecord, ...]
+    threshold: float = 0.90
+```
 
-## 3. Scientific evidence accepted and frozen
+```python
+class RuntimeContext(BaseMetricContext):
+    attributions: tuple[AttributionRecord, ...]
+```
 
-[Certain] The following Stage 3 results are approved:
+A typed immutable tuple is preferred over a mutable list because a frozen Pydantic model does not necessarily make nested lists immutable.
 
-### KernelSHAP
+If compatibility requires accepting lists as input, use a pre-validation coercion:
 
-- Seeds: `0,1,2,3,4`
-- Mean cosine: `1.0000`
-- Mean Spearman: `1.0000`
-- Mean nonzero-feature sign agreement: `1.0000`
-- All five seeds passed all frozen gates
-- MAE, maximum absolute error, top-k agreement and runtime retained as descriptive evidence
+```python
+@field_validator("attributions", mode="before")
+@classmethod
+def coerce_attributions(
+    cls,
+    value: Sequence[AttributionRecord],
+) -> tuple[AttributionRecord, ...]:
+    records = tuple(value)
+    if not records:
+        raise ValueError("attributions must not be empty")
+    return records
+```
 
-### LIME
+Do not introduce `Any`, bare `list`, `# noqa: ANN401`, or new type suppressions to make the migration pass.
 
-- Seeds: `0,1,2,3,4`
-- Mean cosine: `0.9987`
-- Mean sign agreement: `1.0000`
-- Mean top-k signal recall: `1.0000`
-- Descriptive Spearman: `0.9759`
-- Kernel width: `2.4495`
-- All five seeds passed all applicable frozen gates
+## 3. Context-contract requirements
 
-### Determinism
+[Certain] The contexts must preserve existing scientific behavior rather than silently moving metric semantics into validation.
 
-[Certain] Same-seed repeatability passed for:
+### `SparsityContext`
 
-- RF + KernelSHAP
-- RF + LIME
-- XGBoost + KernelSHAP
-- XGBoost + LIME
+It must validate:
 
-[Certain] Different-seed variation remains descriptive and does not constitute a failure.
+- Non-empty attributions
+- Correct attribution-record type
+- Finite threshold
+- `0 < threshold <= 1`
+- Immutable stored collection
 
-## 4. Coverage amendment decision
+The threshold remains frozen at `0.90`. This implementation does not authorize changing the K90 definition.
 
-[Certain] The coverage-policy amendment is ratified with these boundaries:
+### `RuntimeContext`
 
-- The 80% threshold remains mandatory.
-- Only standalone validation runners may be omitted.
-- Reusable metric calculations and scientific logic must remain covered.
-- The omission does not automatically apply to future Stage 4 validation modules.
-- Stage 4 must reassess coverage after migrating its metrics to Option B+.
-- The amendment must disclose that the policy was introduced following a coverage failure and later reviewed and ratified.
+It must validate:
 
-## 5. Nonblocking audit note
+- Non-empty attributions
+- Correct attribution-record type
+- Immutable stored collection
 
-[Likely] The matching Ubuntu test-ID hash is credible because both platforms used the same commit, lockfile, test count and normalized collection algorithm.
+[Likely] Validation of individual `runtime_ms` values should remain in the metric if the existing metric converts missing, negative or non-finite runtimes into structured failure records. Do not move such cases into context-construction errors if doing so changes established behavior.
 
-[Certain] Before a paper submission or public archival release, preserve the Ubuntu hash as downloadable CI output or a retained workflow artifact. Do not rely permanently on a statement that the private CI log cannot be accessed.
+### `StabilityContext`
 
-This is a publication-packaging requirement and does **not** block Stage 4.
+Before reusing it for cosine and Spearman metrics, verify that it represents all inputs required by both metrics without optional-field misuse.
 
-## 6. Stage 4 authorization
+If cosine and Spearman require a different input shape from Top-k Jaccard, create a dedicated immutable context such as:
 
-[Certain] Stage 4 may resume immediately, but the premature Stage 4 commits are not automatically approved.
+```python
+PairwiseStabilityContext
+```
 
-Antigravity must:
+Do not force unrelated stability metrics into one broad context merely to reduce the number of classes.
 
-1. Start from the accepted closure snapshot:
-    
-    ```
-    cdc6a0070ac70feaa4fa19ba33cd131d69beaadd
-    ```
-    
-2. Review the quarantined commits:
-    
-    ```
-    5d327f8e9ba9dafff8387a006d1f71701ea633e9
-    7684dea32d315f25f170924e4914174668927b86
-    ```
-    
-3. Cherry-pick or reimplement only code consistent with the current Option B+ architecture.
-4. Migrate these quarantined metrics to typed immutable contexts:
-    - K90 sparsity
-    - Runtime
-    - Spearman stability
-    - Cosine stability
-5. Remove all four quarantined first-party `# type: ignore[override]` suppressions.
-6. Preserve append-only Stage 3 artifacts.
-7. Keep Stage 4 outputs clearly labelled:
-    
-    ```
-    infrastructure-pilot
-    ```
-    
-8. Create a separate Stage 4 artifact directory.
-9. Submit a Stage 4 implementation plan before conducting its exit-gate validation.
+## 4. Required tests
 
-## 7. Restrictions that remain active
+[Certain] The proposed 11 tests are approved, with these additions:
 
-[Certain] This authorization does **not** permit:
+- Reject non-finite sparsity thresholds:
+    - `NaN`
+    - positive infinity
+    - negative infinity
+- Verify nested collection immutability, not only model-field reassignment.
+- Reject an invalid attribution element type.
+- Preserve existing handling of:
+    - Zero attribution mass
+    - Missing runtime
+    - Negative runtime
+    - Non-finite runtime
+    - Constant attribution vectors
+    - Undefined Spearman correlation
+    - Mismatched vector lengths
+- Verify returned `MetricResult` and `FailureRecord` schemas.
+- Verify no new first-party suppressions were introduced.
 
-- Confirmatory experiments
-- Confirmatory real-dataset benchmark execution
-- Hypothesis changes
-- Threshold changes
-- Seed changes
-- Post-result metric selection
-- Overwriting Stage 3 artifacts
-- Treating the AI assistant as an author
-- Claiming publication-ready empirical conclusions
+[Certain] `≥166 tests` is a planning estimate, not the principal gate. The real gate is preservation of all existing test IDs plus the approved new contract tests.
 
-[Certain] Confirmatory execution remains blocked until:
+## 5. Suppression acceptance criterion
 
-1. Stage 4 passes its exit gate.
-2. The complete protocol is frozen.
-3. Dataset preprocessing and exclusion rules are frozen.
-4. The statistical analysis plan is frozen.
-5. The preregistration package is approved.
-6. External preregistration status is recorded.
+Replace:
 
-## 8. Paste-ready instruction for Antigravity
-
-> DR-007 APPROVED: Stage 3 is closed at final snapshot `cdc6a0070ac70feaa4fa19ba33cd131d69beaadd`. Stage 4 may resume as an infrastructure pilot. Begin from that snapshot. Review the quarantined commits `5d327f8e9ba9dafff8387a006d1f71701ea633e9` and `7684dea32d315f25f170924e4914174668927b86`; do not treat them as automatically accepted. Migrate K90 sparsity, runtime, Spearman stability and cosine stability to the approved Option B+ immutable metric-context interface and remove their first-party override suppressions. Preserve all Stage 3 artifacts unchanged and append-only. Do not run confirmatory experiments, real-dataset confirmatory benchmarks or modify frozen scientific decisions. First submit a restricted Stage 4 implementation plan containing scope, metric contracts, tests, validation evidence, artifact design, provenance strategy and exit criteria.
+> Mypy must report 0 issues, 0 suppressions.
 > 
 
-## Final status
+with:
 
-| Gate | Status |
-| --- | --- |
-| --- | ---: |
-| Phase 0 | ✅ Complete |
-| Phase 1 Stage 1 | ✅ Complete |
-| Phase 1 Stage 2 | ✅ Complete |
-| **Phase 1 Stage 3** | **✅ Approved and closed** |
-| **Phase 1 Stage 4 development** | **✅ Authorized to resume** |
-| Stage 4 exit approval | ⏳ Pending |
-| Confirmatory experiments | ⛔ Blocked |
-| External preregistration | ⏳ Pending |
+> Mypy must report zero issues. The four quarantined Stage 4 `override` suppressions must be removed. No new first-party suppressions may be introduced.
+> 
 
-[Certain] **DR-006 remediation is closed. No further Stage 3 correction cycle is required unless later evidence reveals an actual reproducibility or scientific defect.**
+[Certain] Existing documented project-level suppressions are outside this migration unless the modified code relies on them to hide an interface incompatibility.
+
+Add an explicit audit command, adapted for the available shell:
+
+```bash
+rg -n "type:\s*ignore|noqa" \
+  src/explaincheck/metrics/sparsity \
+  src/explaincheck/metrics/runtime \
+  src/explaincheck/metrics/stability \
+  src/explaincheck/metrics/contexts.py
+```
+
+The report must classify every match; it must not merely report a count.
+
+## 6. Artifact and provenance correction
+
+[Certain] Do not create a mutable `run-manifest.json` stub that will later be overwritten. That conflicts with the append-only requirement.
+
+Use:
+
+```
+artifacts/pilot/stage4-infrastructure-v1/
+├── README.md
+├── infrastructure-validation.json
+├── test-inventory.json
+├── suppression-audit.json
+├── run-manifest.json
+└── artifact-checksums.json
+```
+
+Use two commits:
+
+1. `stage4InfrastructureSourceCommit`
+    - Context migration
+    - Metric migration
+    - Tests
+    - Coverage amendment
+    - Validation generator
+2. `stage4InfrastructureArtifactCommit`
+    - Generated infrastructure evidence
+    - Manifest
+    - Checksums
+
+The manifest must reference the full source commit. It must not attempt to include its own artifact-commit hash.
+
+[Certain] The approval record for this implementation plan is **DR-008**, not DR-007. DR-007 authorized Stage 4 to resume; DR-008 approves this specific plan.
+
+Use:
+
+```json
+{
+  "schema_version": "1.0",
+  "phase": "stage4-infrastructure-pilot",
+  "decision_record": "DR-008",
+  "authorized_snapshot": "cdc6a0070ac70feaa4fa19ba33cd131d69beaadd",
+  "source_commit": "<full-stage4-source-commit>",
+  "status": "infrastructure-validation",
+  "confirmatory_experiments": "NOT_AUTHORIZED"
+}
+```
+
+## 7. Cross-platform verification
+
+[Certain] Windows and Ubuntu must validate the same source commit and lockfile with identical commands:
+
+```bash
+uv sync --locked --extra dev
+uv run ruff check src/ tests/
+uv run ruff format --check src/ tests/
+uv run mypy src/explaincheck/
+uv run python scripts/compute_test_id_hash.py
+uv run pytest tests/ -q
+uv run pytest tests/ --cov=src/explaincheck --cov-report=term-missing
+uv run explaincheck validate-stage3-artifacts
+```
+
+The exit report must include:
+
+- Full source commit
+- `uv.lock` SHA-256
+- Python version
+- Test count
+- Test-ID SHA-256
+- Pass/fail/skip counts
+- Coverage percentage
+- Ruff result
+- Mypy result
+- Stage 3 artifact-validation result
+- Empty `git status --porcelain`
+
+The Ubuntu test-ID hash must be captured as actual workflow output or an uploaded artifact—not inferred from a successful step.
+
+## 8. Revised infrastructure exit criteria
+
+Stage 4 infrastructure development is complete only when:
+
+1. All four Stage 4 override suppressions are removed.
+2. No new first-party suppression hides contract incompatibility.
+3. All contexts use concrete attribution element types.
+4. Nested attribution collections are immutable.
+5. Existing scientific formulas and expected values are unchanged.
+6. Existing tests and approved context tests pass.
+7. Mypy reports zero issues.
+8. Ruff lint and format pass.
+9. Coverage remains above 80% under the ratified policy.
+10. Windows and Ubuntu produce matching test counts and test-ID hashes.
+11. Both platforms validate the frozen Stage 3 artifacts.
+12. The coverage amendment contains the DR-007 disclosure.
+13. Stage 4 evidence is written to `stage4-infrastructure-v1/`.
+14. Source and artifact commits are separated.
+15. The final working tree is clean.
+
+## 9. Authorization boundaries
+
+[Certain] This approval does not authorize:
+
+- New scientific thresholds
+- Metric-definition changes
+- New experiment seeds
+- Real-dataset execution
+- Confirmatory runs
+- Stage 3 artifact modification
+- Stage 4 scientific exit claims
+- Publication-result claims
+
+Any discovery that requires changing K90, runtime, cosine or Spearman semantics must stop implementation and be submitted as a separate scientific decision.
+
+## Paste-ready instruction for Antigravity
+
+> DR-008 APPROVED WITH CORRECTIONS. Implement the Stage 4 infrastructure migration from snapshot `cdc6a0070ac70feaa4fa19ba33cd131d69beaadd`. Use concretely typed immutable attribution collections; do not use bare `list`, `Any`, new `noqa` markers or new type suppressions. Verify that the existing `StabilityContext` correctly represents cosine and Spearman inputs; otherwise introduce a dedicated typed pairwise-stability context. Preserve all metric formulas, fixtures and expected results. Remove the four quarantined `# type: ignore[override]` suppressions. Record evidence in `artifacts/pilot/stage4-infrastructure-v1/` using separate source and artifact commits. Run identical Windows and Ubuntu validation on the same source commit and capture the actual test-ID SHA-256 on both platforms. Do not run confirmatory experiments, real-dataset benchmarks or Stage 4 scientific exit validation. Submit the restricted infrastructure exit report for review.
+> 
+
+[Certain] **Execution may begin under DR-008.**
