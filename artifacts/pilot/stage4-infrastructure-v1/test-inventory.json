@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "source_commit": "7cd0bdb75a6143120c74f5536bc3d8ce36d49623",
+  "platform": "Windows",
+  "python_version": "3.12.9",
+  "test_count": 175,
+  "test_id_sha256": "09a032142370b6a3e84264f0cc3e98e0552431ba0e5b86d79d3a4e3b2324f6a0",
+  "test_modules": [
+    "tests/golden/test_stage2_golden.py",
+    "tests/integration/test_stage2_cli.py",
+    "tests/property/test_stage2_properties.py",
+    "tests/unit/test_stage1_foundation.py",
+    "tests/unit/test_stage2_components.py",
+    "tests/unit/test_stage2_determinism.py",
+    "tests/unit/test_stage3_adapters.py",
+    "tests/unit/test_stage3_metric_contracts.py",
+    "tests/unit/test_stage4_metrics.py"
+  ],
+  "new_stage4_tests": [
+    "test_sparsity_context_accepts_valid",
+    "test_sparsity_context_rejects_empty_attributions",
+    "test_sparsity_context_rejects_bad_threshold_zero",
+    "test_sparsity_context_rejects_bad_threshold_above_one",
+    "test_sparsity_context_rejects_nan_threshold",
+    "test_sparsity_context_rejects_inf_threshold",
+    "test_sparsity_context_rejects_neg_inf_threshold",
+    "test_sparsity_context_is_frozen",
+    "test_sparsity_context_tuple_is_immutable",
+    "test_sparsity_context_rejects_invalid_element_type",
+    "test_runtime_context_accepts_valid",
+    "test_runtime_context_rejects_empty_attributions",
+    "test_runtime_context_is_frozen",
+    "test_runtime_context_tuple_is_immutable",
+    "test_runtime_context_rejects_invalid_element_type",
+    "test_pairwise_stability_context_accepts_valid",
+    "test_pairwise_stability_context_rejects_empty",
+    "test_pairwise_stability_context_is_frozen",
+    "test_pairwise_stability_context_tuple_is_immutable",
+    "test_no_new_first_party_suppressions"
+  ],
+  "ubuntu_validation": "PENDING — GitHub Actions CI"
+}

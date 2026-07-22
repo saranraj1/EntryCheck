@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "source_commit": "7cd0bdb75a6143120c74f5536bc3d8ce36d49623",
+  "audit_scope": [
+    "src/explaincheck/metrics/stability/cosine_stability.py",
+    "src/explaincheck/metrics/stability/spearman_stability.py",
+    "src/explaincheck/metrics/sparsity/k90_sparsity.py",
+    "src/explaincheck/metrics/runtime/runtime_metric.py",
+    "src/explaincheck/metrics/contexts.py"
+  ],
+  "quarantined_suppressions_removed": {
+    "cosine_stability.py": {
+      "line": 111,
+      "was": "def compute(  # type: ignore[override]  # Stage 4 quarantine: pending context migration",
+      "now": "def compute(  # suppression removed; BaseMetric[PairwiseStabilityContext] eliminates need"
+    },
+    "spearman_stability.py": {
+      "line": 114,
+      "was": "def compute(  # type: ignore[override]  # Stage 4 quarantine: pending context migration",
+      "now": "def compute(  # suppression removed"
+    },
+    "k90_sparsity.py": {
+      "line": 109,
+      "was": "def compute(  # type: ignore[override]  # Stage 4 quarantine: pending StabilityContext migration",
+      "now": "def compute(  # suppression removed"
+    },
+    "runtime_metric.py": {
+      "line": 82,
+      "was": "def compute(  # type: ignore[override]  # Stage 4 quarantine: pending context migration",
+      "now": "def compute(  # suppression removed"
+    }
+  },
+  "remaining_suppressions": [
+    {
+      "file": "src/explaincheck/metrics/contexts.py",
+      "line": 92,
+      "text": "noqa: ANN401",
+      "classification": "PERMITTED",
+      "reason": "Bare 'list' return type annotation on AOPCContext.non_empty — pre-existing pattern, not hiding interface incompatibility"
+    },
+    {
+      "file": "src/explaincheck/metrics/contexts.py",
+      "line": 145,
+      "text": "noqa: ANN401",
+      "classification": "PERMITTED",
+      "reason": "Bare 'list' return type annotation on StabilityContext.non_empty — pre-existing pattern"
+    },
+    {
+      "file": "src/explaincheck/metrics/contexts.py",
+      "line": 180,
+      "text": "noqa: ANN401",
+      "classification": "PERMITTED",
+      "reason": "Bare 'tuple' return type on PairwiseStabilityContext.coerce_attributions — required because Pydantic validator return type must accept any sequence input; does not hide incompatibility"
+    },
+    {
+      "file": "src/explaincheck/metrics/contexts.py",
+      "line": 230,
+      "text": "noqa: ANN401",
+      "classification": "PERMITTED",
+      "reason": "Same as above for SparsityContext.coerce_attributions"
+    },
+    {
+      "file": "src/explaincheck/metrics/contexts.py",
+      "line": 275,
+      "text": "noqa: ANN401",
+      "classification": "PERMITTED",
+      "reason": "Same as above for RuntimeContext.coerce_attributions"
+    }
+  ],
+  "verdict": "PASS — All 4 quarantined type:ignore[override] suppressions removed. No new first-party suppressions hide interface incompatibilities. All remaining noqa:ANN401 are on validator return types, not on metric compute() signatures."
+}

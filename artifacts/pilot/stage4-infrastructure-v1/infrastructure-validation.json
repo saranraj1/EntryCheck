@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "platform": "Windows",
+  "python_version": "3.12.9",
+  "source_commit": "7cd0bdb75a6143120c74f5536bc3d8ce36d49623",
+  "uv_lock_sha256": "b617a49ba2d6e40d34e3a92c4078bf64c90862b4e21fdf5cb2612e9b1f0c63b1",
+  "validation_timestamp_utc": "2026-07-22T04:32:00Z",
+  "commands_run": [
+    "uv sync --locked --extra dev",
+    "uv run ruff check src/ tests/",
+    "uv run ruff format --check src/ tests/",
+    "uv run mypy src/explaincheck/",
+    "uv run python scripts/compute_test_id_hash.py",
+    "uv run pytest tests/ -q",
+    "uv run pytest tests/ --cov=src/explaincheck --cov-report=term-missing",
+    "uv run explaincheck validate-stage3-artifacts"
+  ],
+  "results": {
+    "ruff_lint": "PASS",
+    "ruff_format": "PASS",
+    "mypy": "0 issues in 54 source files",
+    "test_count": 175,
+    "test_id_sha256": "09a032142370b6a3e84264f0cc3e98e0552431ba0e5b86d79d3a4e3b2324f6a0",
+    "passed": 175,
+    "failed": 0,
+    "skipped": 0,
+    "coverage_pct": 86.55,
+    "coverage_threshold": 80.0,
+    "coverage_status": "PASS",
+    "stage3_artifacts_validated": "7/7 PASS",
+    "working_tree_clean": true
+  },
+  "ubuntu_validation": "PENDING — GitHub Actions CI (same source commit 7cd0bdb...)",
+  "suppression_summary": {
+    "type_ignore_override_in_migrated_files": 0,
+    "noqa_ANN401_in_contexts": 5,
+    "classification": "noqa:ANN401 on bare tuple/list return annotations in coerce_attributions validators — permitted per DR-008 §5 (existing project-level suppression pattern, not hiding interface incompatibility)"
+  }
+}
