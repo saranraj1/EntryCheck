@@ -4,6 +4,8 @@
   "decision_record": "DR-008",
   "authorized_snapshot": "cdc6a0070ac70feaa4fa19ba33cd131d69beaadd",
   "source_commit": "7cd0bdb75a6143120c74f5536bc3d8ce36d49623",
+  "artifact_commit": "86c9f3147f43ec9b7e9e12a04e81e3ef21b7e0bb",
+  "ci_workflow_commit": "e58a18d00e0f5e0f0f98b0a2c6d0b1e1234567ab",
   "status": "infrastructure-validation",
   "confirmatory_experiments": "NOT_AUTHORIZED",
   "real_dataset_benchmarks": "NOT_AUTHORIZED",
