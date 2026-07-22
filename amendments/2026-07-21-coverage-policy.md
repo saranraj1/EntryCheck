@@ -117,3 +117,14 @@ coverage denominator. Their coverage will be assessed after the Stage 4
 infrastructure migration is validated.
 
 *Appended by AI assistant Antigravity per DR-008 §1 requirement.*
+
+---
+
+## Countersignature — Saranraj U (DR-008A §7)
+
+> Ratified by Saranraj U under DR-007 and reaffirmed under DR-008. The exclusion was introduced after a coverage failure and was retrospectively reviewed. It applies only to the identified Stage 3 standalone validation runners and does not automatically apply to Stage 4 or later code.
+
+**Date of ratification:** 2026-07-22  
+**Decision records:** DR-007 (Stage 3 closure), DR-008 (Stage 4 authorization), DR-008A (infrastructure exit)  
+**Countersignature recorded by:** AI assistant Antigravity per DR-008A §7  
+**Final authority:** Saranraj U — this record is appended in accordance with the explicit countersignature wording provided in DR-008A.

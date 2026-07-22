@@ -177,7 +177,7 @@ class PairwiseStabilityContext(BaseMetricContext):
 
     @field_validator("attributions", mode="before")
     @classmethod
-    def coerce_attributions(cls, value: object) -> tuple:  # noqa: ANN401
+    def coerce_attributions(cls, value: object) -> tuple[object, ...]:
         """Accept any sequence; coerce to immutable tuple and validate element types."""
         from collections.abc import Sequence as _Seq
 
@@ -227,7 +227,7 @@ class SparsityContext(BaseMetricContext):
 
     @field_validator("attributions", mode="before")
     @classmethod
-    def coerce_attributions(cls, value: object) -> tuple:  # noqa: ANN401
+    def coerce_attributions(cls, value: object) -> tuple[object, ...]:
         """Accept any sequence; coerce to immutable tuple and validate element types."""
         from collections.abc import Sequence as _Seq
 
@@ -272,7 +272,7 @@ class RuntimeContext(BaseMetricContext):
 
     @field_validator("attributions", mode="before")
     @classmethod
-    def coerce_attributions(cls, value: object) -> tuple:  # noqa: ANN401
+    def coerce_attributions(cls, value: object) -> tuple[object, ...]:
         """Accept any sequence; coerce to immutable tuple and validate element types."""
         from collections.abc import Sequence as _Seq
 

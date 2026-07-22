@@ -383,6 +383,108 @@ def validate_stage3_artifacts(artifact_dir: Path) -> None:
         click.echo("[PASS] All checksums match. All required JSON fields present.")
 
 
+@cli.command("validate-stage4-infrastructure-artifacts")
+@click.option(
+    "--dir",
+    "artifact_dir",
+    default="artifacts/pilot/stage4-infrastructure-v1",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="Path to the stage4-infrastructure-v1 artifact directory.",
+    show_default=True,
+)
+def validate_stage4_infrastructure_artifacts(artifact_dir: Path) -> None:
+    """Validate stage4-infrastructure-v1 artifact checksums and JSON schema.
+
+    Loads artifact-checksums.json (the trusted manifest), recomputes SHA-256
+    for every listed file, compares expected vs observed hashes, validates
+    required JSON fields, and detects missing or unexpected files.
+
+    Exits nonzero if any check fails. The manifest itself is excluded from
+    the checksum computation to avoid a self-referential hash problem.
+
+    Does not modify Stage 3 artifacts.
+    """
+    import hashlib
+
+    MANIFEST_NAME = "artifact-checksums.json"
+    manifest_path = artifact_dir / MANIFEST_NAME
+
+    if not manifest_path.exists():
+        click.echo(f"[ERROR] Trusted manifest not found: {manifest_path}", err=True)
+        sys.exit(1)
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    expected: dict[str, dict] = manifest.get("files", {})
+    required_fields: dict[str, list[str]] = manifest.get("required_json_fields", {})
+
+    failures: list[str] = []
+    checked = 0
+
+    TEXT_EXTENSIONS = {".json", ".csv", ".txt", ".md", ".py", ".toml", ".yml", ".yaml"}
+
+    def _hash_file(path: Path) -> str:
+        """SHA-256 of file content with CRLF→LF normalisation for text files."""
+        raw = path.read_bytes()
+        if path.suffix.lower() in TEXT_EXTENSIONS:
+            raw = raw.replace(b"\r\n", b"\n")
+        return hashlib.sha256(raw).hexdigest()
+
+    # 1. Check all expected files exist and hash matches
+    for fname, meta in expected.items():
+        fpath = artifact_dir / fname
+        if not fpath.exists():
+            failures.append(f"MISSING file: {fname}")
+            continue
+        observed = _hash_file(fpath)
+        expected_sha = meta.get("sha256", "")
+        if observed != expected_sha:
+            failures.append(
+                f"HASH MISMATCH: {fname}\n"
+                f"  expected: {expected_sha}\n"
+                f"  observed: {observed}"
+            )
+        else:
+            click.echo(f"  [OK] {fname} (sha256: {observed[:16]}...)")
+        checked += 1
+
+    # 2. Detect unexpected files (not in manifest, not the manifest itself)
+    actual_files = {f.name for f in artifact_dir.iterdir() if f.is_file()}
+    expected_files = set(expected.keys()) | {MANIFEST_NAME}
+    unexpected = actual_files - expected_files
+    for fname in sorted(unexpected):
+        failures.append(f"UNEXPECTED file (not in manifest): {fname}")
+
+    # 3. JSON schema validation for required fields
+    for fname, fields in required_fields.items():
+        fpath = artifact_dir / fname
+        if not fpath.exists():
+            continue  # already flagged as missing above
+        try:
+            data = json.loads(fpath.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            failures.append(f"INVALID JSON: {fname} — {e}")
+            continue
+        for field in fields:
+            if field not in data:
+                failures.append(f"MISSING JSON FIELD: {fname} missing '{field}'")
+
+    # --- Summary ---
+    click.echo()
+    click.echo("=== validate-stage4-infrastructure-artifacts ===")
+    click.echo(f"  Directory:  {artifact_dir}")
+    click.echo(f"  Manifest:   {MANIFEST_NAME}")
+    click.echo(f"  Files checked: {checked}")
+    click.echo(f"  Failures:   {len(failures)}")
+
+    if failures:
+        click.echo("[FAIL]", err=True)
+        for f in failures:
+            click.echo(f"  {f}", err=True)
+        sys.exit(1)
+    else:
+        click.echo("[PASS] All checksums match. All required JSON fields present.")
+
+
 @cli.command("env-snapshot")
 @click.option(
     "--out", default=None, type=click.Path(), help="Write JSON to file instead of stdout."
