@@ -711,7 +711,7 @@ def test_no_new_first_party_suppressions():
     ]
     for path in migrated:
         text = path.read_text(encoding="utf-8")
-        assert "type: ignore[override]" not in text, (
-            f"{path.name} still contains a quarantined override suppression"
-        )
+        assert (
+            "type: ignore[override]" not in text
+        ), f"{path.name} still contains a quarantined override suppression"
         assert "type: ignore[override]" not in text
