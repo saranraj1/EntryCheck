@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import sys
 
 import pytest
@@ -19,16 +20,24 @@ class IDCollector:
 
 def main() -> None:
     collector = IDCollector()
-    pytest.main(
-        ["tests/", "--collect-only", "-q", "--no-header", "--tb=no"],
-        plugins=[collector],
-    )
+    # Redirect pytest stdout to devnull: prevents shap DeprecationWarnings on
+    # Ubuntu from polluting the stdout hash output used by CI comparison.
+    with open(os.devnull, "w") as devnull:  # noqa: PTH123
+        old_stdout = sys.stdout
+        sys.stdout = devnull
+        try:
+            pytest.main(
+                ["tests/", "--collect-only", "-q", "--no-header", "--tb=no"],
+                plugins=[collector],
+            )
+        finally:
+            sys.stdout = old_stdout
     ids = sorted(collector.ids)
     print(f"Count: {len(ids)}", file=sys.stderr)
     payload = "\n".join(ids) + "\n"
     h = hashlib.sha256(payload.encode("utf-8")).hexdigest()
     print(f"test-ID sha256: {h}", file=sys.stderr)
-    # Write to stdout for piping
+    # Write ONLY the bare hash to stdout (used by CI hash comparison)
     print(h)
 
 
