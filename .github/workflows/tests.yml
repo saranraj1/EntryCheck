@@ -49,8 +49,10 @@ jobs:
         env:
           EXPECTED_TEST_ID_SHA256: "09a032142370b6a3e84264f0cc3e98e0552431ba0e5b86d79d3a4e3b2324f6a0"
         run: |
-          # compute_test_id_hash.py writes bare hash to stdout and "test-ID sha256: <hash>" to stderr
-          ACTUAL=$(uv run python scripts/compute_test_id_hash.py)
+          # compute_test_id_hash.py guarantees hash is the LAST line of stdout.
+          # Use tail -1 to extract it cleanly, regardless of pytest collection
+          # warnings or other output that may appear before it on Ubuntu.
+          ACTUAL=$(uv run python scripts/compute_test_id_hash.py | tail -1)
           echo "Ubuntu test-ID sha256: ${ACTUAL}"
           # Write structured file for artifact upload (human-readable)
           echo "count=175" > ci-test-id-hash.txt
