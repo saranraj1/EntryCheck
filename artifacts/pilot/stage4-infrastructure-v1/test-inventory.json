@@ -38,5 +38,12 @@
     "test_pairwise_stability_context_tuple_is_immutable",
     "test_no_new_first_party_suppressions"
   ],
-  "ubuntu_validation": "PENDING — GitHub Actions CI"
+  "ubuntu_validation": {
+    "status": "PASS",
+    "ci_run": "https://github.com/saranraj1/EntryCheck/actions/runs/29891540620",
+    "commit": "7ef6391410876c57597c36e9417cc89aa3a92e90",
+    "artifact_name": "ubuntu-test-id-hash-7ef6391410876c57597c36e9417cc89aa3a92e90",
+    "artifact_digest": "sha256:13a27407c6701302994c58f71503b3299a3dd407af8ad5143645a9896fcb2ae1",
+    "note": "Ubuntu test-ID hash extracted from workflow artifact. SHA must match Windows test-ID hash for cross-platform consistency."
+  }
 }

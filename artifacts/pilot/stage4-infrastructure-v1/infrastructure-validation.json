@@ -30,7 +30,15 @@
     "stage3_artifacts_validated": "7/7 PASS",
     "working_tree_clean": true
   },
-  "ubuntu_validation": "PENDING — GitHub Actions CI (same source commit 7cd0bdb...)",
+  "ubuntu_validation": {
+    "status": "PASS",
+    "ci_run": "https://github.com/saranraj1/EntryCheck/actions/runs/29891540620",
+    "commit": "7ef6391410876c57597c36e9417cc89aa3a92e90",
+    "job_unit_and_property": "success (1m 47s)",
+    "job_scientific": "success (19s)",
+    "artifact_name": "ubuntu-test-id-hash-7ef6391410876c57597c36e9417cc89aa3a92e90",
+    "artifact_digest": "sha256:13a27407c6701302994c58f71503b3299a3dd407af8ad5143645a9896fcb2ae1"
+  },
   "suppression_summary": {
     "type_ignore_override_in_migrated_files": 0,
     "noqa_ANN401_in_contexts": 5,
