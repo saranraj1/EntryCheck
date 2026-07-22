@@ -319,12 +319,21 @@ def validate_stage3_artifacts(artifact_dir: Path) -> None:
     checked = 0
 
     # 1. Check all expected files exist and hash matches
+    TEXT_EXTENSIONS = {".json", ".csv", ".txt", ".md", ".py", ".toml", ".yml", ".yaml"}
+
+    def _hash_file(path: Path) -> str:
+        """SHA-256 of file content with CRLF→LF normalisation for text files."""
+        raw = path.read_bytes()
+        if path.suffix.lower() in TEXT_EXTENSIONS:
+            raw = raw.replace(b"\r\n", b"\n")
+        return hashlib.sha256(raw).hexdigest()
+
     for fname, meta in expected.items():
         fpath = artifact_dir / fname
         if not fpath.exists():
             failures.append(f"MISSING file: {fname}")
             continue
-        observed = hashlib.sha256(fpath.read_bytes()).hexdigest()
+        observed = _hash_file(fpath)
         expected_sha = meta.get("sha256", "")
         if observed != expected_sha:
             failures.append(

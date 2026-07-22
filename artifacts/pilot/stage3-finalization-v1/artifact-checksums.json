@@ -1,36 +1,36 @@
 {
   "schema_version": "1.0",
   "purpose": "Trusted checksum manifest for artifact validation (DR-006C/DR-006D)",
-  "note": "This file is excluded from its own checksum computation. Hashes recomputed after adding .gitattributes (eol=lf) to ensure Windows/Ubuntu consistency (DR-006D).",
-  "hashing_algorithm": "sha256",
+  "note": "This file is excluded from its own checksum computation. All hashes use SHA-256 of CRLF-to-LF-normalised content for cross-platform consistency (DR-006D).",
+  "hashing_algorithm": "sha256-lf-normalised",
   "files": {
     "determinism-matrix-provenance.json": {
-      "sha256": "652b54bd7392178595d8a90a1ac65c7b05f790853786c68972a4829a6ebaaf86",
-      "size_bytes": 5523
+      "sha256": "e6586bd7ce51ad927acb268d6c822d85159ef6188831f4686d48b694ac25c404",
+      "size_bytes": 5419
     },
     "determinism-matrix.json": {
-      "sha256": "720599996c0cbdaf81d3d20f1cab7a266985256473d415a58accba21ca25dc41",
-      "size_bytes": 8527
+      "sha256": "f0f6eb7f9a0ac21197f2b779d8bd1cfd5d4ddff17fadb2a03c4905716fcc175f",
+      "size_bytes": 8238
     },
     "kernelshap-multiseed-summary.json": {
-      "sha256": "bd30ff33739fc832999318378b1c11e9aa4329a1e59e3805917652ffa727abe5",
-      "size_bytes": 3599
+      "sha256": "c07244bd8fe815f5e5c22a70101cabcf8cce4829800f45bbce4277243279064a",
+      "size_bytes": 3457
     },
     "kernelshap-multiseed.csv": {
-      "sha256": "e2fdac55f545298b8319b4226feecfe1e2931925d1db6a0d605a21240e3cb996",
-      "size_bytes": 664
+      "sha256": "4db1a4a29dc8252c573129698d4ae081c2fd43dc6770064be0c698c5deaec8e8",
+      "size_bytes": 658
     },
     "lime-multiseed-summary.json": {
-      "sha256": "8f413d3a5f63e6105d921d90c3a95698861be69910baed4d4c872883e63dcf51",
-      "size_bytes": 3770
+      "sha256": "b9fef4630c10fc7593d24cdcc6923e9dc29a46a0c7ed09f0067c79bc9ab11629",
+      "size_bytes": 3633
     },
     "lime-multiseed.csv": {
-      "sha256": "bc4e39ca73a9f49d5ddb44fa43508164d8bf5aa0265e002ad06eb836df47f850",
-      "size_bytes": 781
+      "sha256": "570d3754dad425ddaa33ff94eec3bb75246240eb75b79d8ee689cb8c4a63e31a",
+      "size_bytes": 775
     },
     "run-manifest.json": {
-      "sha256": "3ae09462cbee53df8dc9365e187e6a50904a884ecab8a42c762d191283ea0769",
-      "size_bytes": 2433
+      "sha256": "272e3570ba0e75952ee7f1d59c93da0315ab8b9e9811660b94a276d0776ac749",
+      "size_bytes": 2356
     }
   },
   "required_json_fields": {
