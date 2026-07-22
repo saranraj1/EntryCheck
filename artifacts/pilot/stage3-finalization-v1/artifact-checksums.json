@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "purpose": "Trusted checksum manifest for artifact validation (DR-006C)",
-  "note": "This file is excluded from its own checksum computation. It is itself not checksummed.",
+  "purpose": "Trusted checksum manifest for artifact validation (DR-006C/DR-006D)",
+  "note": "This file is excluded from its own checksum computation. Hashes recomputed after adding .gitattributes (eol=lf) to ensure Windows/Ubuntu consistency (DR-006D).",
   "hashing_algorithm": "sha256",
   "files": {
     "determinism-matrix-provenance.json": {
