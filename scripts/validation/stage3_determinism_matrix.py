@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Stage 3 compatibility × determinism matrix runner (DR-006A §4, Step 7).
 
@@ -39,7 +39,9 @@ CELLS = [
 def main() -> int:
     parser = argparse.ArgumentParser(description="Compatibility × determinism matrix")
     parser.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2, 3, 4])
-    parser.add_argument("--output-dir", type=Path, default=Path("artifacts/pilot/stage3-finalization-v1"))
+    parser.add_argument(
+        "--output-dir", type=Path, default=Path("artifacts/pilot/stage3-finalization-v1")
+    )
     args = parser.parse_args()
 
     output_dir = args.output_dir
@@ -74,11 +76,13 @@ def main() -> int:
                 all_schema_valid = False
         except Exception as exc:
             print(f"ERROR: {exc}")
-            matrix["cells"].append({
-                "cell": cell_id,
-                "error": str(exc),
-                "schema_valid": False,
-            })
+            matrix["cells"].append(
+                {
+                    "cell": cell_id,
+                    "error": str(exc),
+                    "schema_valid": False,
+                }
+            )
             all_schema_valid = False
 
     matrix["all_schema_valid"] = all_schema_valid

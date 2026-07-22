@@ -5,6 +5,7 @@ The hash is always the LAST line printed to stdout so CI can extract it with:
 
 This is robust to pytest collection warnings polluting earlier stdout lines.
 """
+
 from __future__ import annotations
 
 import hashlib

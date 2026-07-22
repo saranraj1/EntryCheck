@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Stage 3 LIME multi-seed validation runner (DR-006A §4, Step 7).
 
@@ -39,7 +39,9 @@ from explaincheck.validation.lime_reference import run_lime_seed
 def main() -> int:
     parser = argparse.ArgumentParser(description="LIME multi-seed validation")
     parser.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2, 3, 4])
-    parser.add_argument("--output-dir", type=Path, default=Path("artifacts/pilot/stage3-finalization-v1"))
+    parser.add_argument(
+        "--output-dir", type=Path, default=Path("artifacts/pilot/stage3-finalization-v1")
+    )
     args = parser.parse_args()
 
     output_dir = args.output_dir
@@ -75,9 +77,18 @@ def main() -> int:
         )
 
     fieldnames = [
-        "seed", "mean_cosine", "mean_sign_agree", "mean_topk_recall",
-        "mean_spearman", "std_attribution", "kernel_width", "runtime_ms",
-        "gate_cosine", "gate_sign_agree", "gate_topk_recall", "all_gates_pass",
+        "seed",
+        "mean_cosine",
+        "mean_sign_agree",
+        "mean_topk_recall",
+        "mean_spearman",
+        "std_attribution",
+        "kernel_width",
+        "runtime_ms",
+        "gate_cosine",
+        "gate_sign_agree",
+        "gate_topk_recall",
+        "all_gates_pass",
     ]
     with csv_path.open("w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -117,7 +128,9 @@ def main() -> int:
             "cosine_pass": mean_cosine >= 0.95,
             "sign_agree_pass": mean_sign_agree >= 0.90,
             "topk_recall_pass": mean_topk_recall >= 0.90,
-            "all_gates_pass": (mean_cosine >= 0.95 and mean_sign_agree >= 0.90 and mean_topk_recall >= 0.90),
+            "all_gates_pass": (
+                mean_cosine >= 0.95 and mean_sign_agree >= 0.90 and mean_topk_recall >= 0.90
+            ),
         },
         "descriptive_stats": {
             "mean_cosine": _stats("mean_cosine"),
@@ -141,13 +154,21 @@ def main() -> int:
 
     print()
     print("=== Gate Summary (5-seed mean) ===")
-    print(f"  Mean cosine:       {mean_cosine:.4f}  >= 0.95  -> {'PASS' if mean_cosine >= 0.95 else 'FAIL'}")
-    print(f"  Mean sign agree:   {mean_sign_agree:.4f}  >= 0.90  -> {'PASS' if mean_sign_agree >= 0.90 else 'FAIL'}")
-    print(f"  Mean top-k recall: {mean_topk_recall:.4f}  >= 0.90  -> {'PASS' if mean_topk_recall >= 0.90 else 'FAIL'}")
+    print(
+        f"  Mean cosine:       {mean_cosine:.4f}  >= 0.95  -> {'PASS' if mean_cosine >= 0.95 else 'FAIL'}"
+    )
+    print(
+        f"  Mean sign agree:   {mean_sign_agree:.4f}  >= 0.90  -> {'PASS' if mean_sign_agree >= 0.90 else 'FAIL'}"
+    )
+    print(
+        f"  Mean top-k recall: {mean_topk_recall:.4f}  >= 0.90  -> {'PASS' if mean_topk_recall >= 0.90 else 'FAIL'}"
+    )
     print(f"  Descriptive Spearman: {mean_spearman:.4f}  (no gate)")
     print(f"  Kernel width (actual): {kernel_width:.4f}")
     all_pass = summary["gate_results"]["all_gates_pass"]
-    print(f"\n  Overall: {'ALL GATES PASS (PASS)' if all_pass else 'ONE OR MORE GATES FAIL (FAIL)'}")
+    print(
+        f"\n  Overall: {'ALL GATES PASS (PASS)' if all_pass else 'ONE OR MORE GATES FAIL (FAIL)'}"
+    )
 
     return 0 if all_pass else 2
 
